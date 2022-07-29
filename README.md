@@ -1,7 +1,5 @@
 # Node.js CLI template
 
-> ⚠️⚠️ For Windows only
-
 - ✅ TypeScript.
 - ✅ EsLint.
 - ✅ EsBuild.
@@ -36,6 +34,8 @@
 - Start the project from the bundle folder.
 
 ### `build:installer`
+
+> ⚠️⚠️ For Windows only
 
 - Creates an NSIS installer to install your CLI to Windows.
 - First, you need to install `NSIS` to your system via PowerShell `winget install NSIS.NSIS`.
