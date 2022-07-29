@@ -6,7 +6,7 @@
 - ✅ Inquirer.
 - ✅ Chalk.
 - ✅ Gradient-string
-- ✅ Nsis installer.
+- ✅ NSIS installer.
 - ✅ Helpers
   - Arguments parser.
   - Spinner (loading).
