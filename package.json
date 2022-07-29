@@ -1,0 +1,48 @@
+{
+  "name": "node-cli-template",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Ahmed Alabsi <alabsi91@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "description": "Node.js CLI Template",
+  "bin": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "start:dev": "start node scripts/start-dev.js",
+    "serve": "npx tsc && node dist/index.js",
+    "build:js": "npx tsc",
+    "build:installer": "node --no-warnings scripts/build-installer.js"
+  },
+  "dependencies": {
+    "chalk": "^5.0.1",
+    "gradient-string": "^2.0.1",
+    "inquirer": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/gradient-string": "^1.1.2",
+    "@types/inquirer": "^8.2.1",
+    "@typescript-eslint/eslint-plugin": "^5.30.7",
+    "@typescript-eslint/parser": "^5.30.7",
+    "esbuild": "^0.14.50",
+    "eslint": "^8.20.0",
+    "typescript": "^4.7.4"
+  },
+  "eslintConfig": {
+    "root": true,
+    "ignorePatterns": [
+      "*.js"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended"
+    ]
+  }
+}
