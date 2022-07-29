@@ -45,7 +45,7 @@ export default function parseArgs<T>() {
   return results;
 }
 
-// you can get more frames from `cli-spinners` npm package
+// ❕ you can get different spinners from `cli-spinners` npm package
 const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
 /** ⚠️ if the terminal window is resized while the spinner is running, weird behavior may occur. */
