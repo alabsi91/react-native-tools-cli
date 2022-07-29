@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
-import chalk from 'chalk';
 import { existsSync } from 'fs';
+import chalk from 'chalk';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
