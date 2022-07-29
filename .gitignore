@@ -30,6 +30,8 @@ benchmarks/graphs
 
 dist
 
+bundle
+
 /*.tgz
 
 installer

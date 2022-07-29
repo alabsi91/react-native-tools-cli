@@ -12,9 +12,11 @@
   ],
   "scripts": {
     "start:dev": "start node scripts/start-dev.js",
-    "serve": "npx tsc && node dist/index.js",
+    "serve:build": "node dist/index.js",
+    "serve:bundle": "node bundle/index.cjs",
     "build:js": "npx tsc",
-    "build:installer": "node --no-warnings scripts/build-installer.js"
+    "build:installer": "node --no-warnings scripts/build-installer.js",
+    "build:bundle": "npx esbuild src/index.ts --bundle --platform=node --target=node16 --outdir=bundle --out-extension:.js=.cjs --minify"
   },
   "dependencies": {
     "chalk": "^5.0.1",
