@@ -30,9 +30,9 @@ const outFolder = 'installer',
   if (!existsSync(path.join(outFolder, 'node.exe')) && includeNodejs) {
     try {
       progress = loading(`- Downloading "node.exe v${nodeVersion}" ...`);
-      const res = await fetch(nodeDownloadLink);
-      const nodeArrayBuffer = await res.arrayBuffer();
-      const nodeFile = Buffer.from(nodeArrayBuffer);
+      const res = await fetch(nodeDownloadLink),
+        nodeArrayBuffer = await res.arrayBuffer(),
+        nodeFile = Buffer.from(nodeArrayBuffer);
       await fs.writeFile(path.join(outFolder, 'node.exe'), nodeFile);
       progress(`- node.exe v${nodeVersion} downloaded!`);
     } catch (error) {
@@ -93,6 +93,7 @@ const outFolder = 'installer',
       .replace('!define AppDescription ""', `!define AppDescription "${description}"`) // inject AppDescription
       .replace('!define JsFile ""', `!define JsFile "${outJsFile}"`) // inject JsFile name
       .replace('Section "Node.js"', `Section "node.js v${nodeVersion}"`); // inject Node.js version
+    // remove Node.js component if not included in the installer.
     if (!includeNodejs) {
       newInstallerNsi = newInstallerNsi
         .replace(/Section "Node\.js[\S\s]+?SectionEnd/i, '')

@@ -46,7 +46,7 @@ async function app() {
   // 👇 Example for creating a spinner.
   const loading = progress('Processing...');
   await sleep(5000);
-  loading.success(`Hello ${name}! 👋`); // stop with a success message.
+  loading.log(`Hello ${name}! 👋`); // stop with a success message.
 }
 
 app(); // 🚀 Start the app.
