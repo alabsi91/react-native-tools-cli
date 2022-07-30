@@ -14,11 +14,10 @@ let worker;
       entryPoints: [entryPoint],
       external: ['./node_modules/*'],
       platform: 'node',
-      target: 'node18',
-      loader: { '.ts': 'ts' },
       outfile,
       format: 'esm',
       bundle: true,
+      define: { DEBUG: 'true' },
       watch: {
         async onRebuild(error) {
           if (error) {

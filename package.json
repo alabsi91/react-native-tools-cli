@@ -11,7 +11,7 @@
     "dist"
   ],
   "scripts": {
-    "start:dev": "start node scripts/start-dev.js",
+    "start:dev": "node scripts/start-dev.js",
     "serve:build": "node dist/index.js",
     "serve:bundle": "node bundle/index.cjs",
     "build:js": "npx tsc",
