@@ -49,12 +49,12 @@
 
 - First clone the project.
 
-```
+```console
 git clone https://github.com/alabsi91/nodejs-cli-typescript-nsis-template.git
 ```
 
 - Then go to the project folder and install the dependencies.
 
-```
+```console
 npm install
 ```
