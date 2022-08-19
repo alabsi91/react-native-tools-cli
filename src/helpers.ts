@@ -2,8 +2,9 @@ import chalk from 'chalk';
 
 /**
  * - It takes the command line arguments, and returns an object with the arguments as key value pairs.
+ * @example
+ * ◽ Valid arguments syntax:
  *
- * - Valid arguments syntax:
  * ◽ -h                        a boolean flag.            ➡️ `{ h: true }`.
  * ◽ --help                    a boolean flag.            ➡️ `{ help: true }`.
  * ◽ --output=false            a boolean flag.            ➡️ `{ output: false }`.
@@ -12,7 +13,7 @@ import chalk from 'chalk';
  * ◽ "C:\Program Files (x86)"  a string with quates.      ➡️ `{ args: [ 'C:\Program Files (x86)' ] }`.
  * ◽ C:\Users\Public           a string without spaces.   ➡️ `{ args: [ 'C:\Users\Public' ] }`.
  */
-export default function parseArgs<T>() {
+export function argsParser<T>() {
   const results: T extends { [key: string]: unknown } ? T : { [key: string]: unknown } = Object.assign({});
 
   for (const arg of process.argv.slice(2)) {
@@ -45,10 +46,10 @@ export default function parseArgs<T>() {
   return results;
 }
 
-// ❕ See https://github.com/sindresorhus/cli-spinners/blob/main/spinners.json for a full list.
+// ? 💁 See `https://github.com/sindresorhus/cli-spinners/blob/main/spinners.json` for more spinners.
 const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
-/** ⚠️ if the terminal window is resized while the spinner is running, weird behavior may occur. */
+/** ⚠️ if the terminal's window is resized while the spinner is running, weird behavior may occur. */
 export function progress(message: string, autoStopTimer = 0) {
   let rowNumber: number, // row number
     id: NodeJS.Timeout; // to save the interval id
