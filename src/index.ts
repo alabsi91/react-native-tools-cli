@@ -2,6 +2,7 @@
 
 import inquirer from 'inquirer';
 import chalk from 'chalk';
+import z from 'zod';
 import gradient from 'gradient-string';
 import { argsParser, progress, sleep } from './helpers.js';
 
@@ -20,17 +21,21 @@ console.log(
   )
 );
 
-// ! ⚠️ type checking will not work in runtime, the user can pass any type of argument.
-// 👇 your expected arguments, used for autocomplete.
-type myArgsT = {
-  name?: string; // --name=<name>
-  fullName?: string; // --full-name="<full-name>"
-  age?: number; // --age=<age>
-  h?: boolean; // -h
-};
-const args = argsParser<myArgsT>();
-const fullName = args.fullName && typeof args.fullName === 'string' ? args.fullName : null; // get an argument value.
-if (fullName) console.log(chalk.green(`\n- Your full name is ${fullName}! 👋`));
+// 👇 your expected arguments, used for autocomplete and validation.
+const myArgs = z.object({
+  name: z.string().optional(), // --name=<name>
+  fullName: z.string().optional(), // --full-name="<full-name>"
+  age: z.number().optional(), // --age=<age>
+  h: z.boolean().optional(), // -h
+  args: z.array(z.string()).optional(), // E.g "C:\Program Files (x86)"
+});
+
+try {
+  const args = argsParser(myArgs);
+  console.log('args :', args);
+} catch (err) {
+  console.log(chalk.red(err));
+}
 
 async function app() {
   type answersT = { name: string };

@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { z, ZodType } from 'zod';
 
 /**
  * - It takes the command line arguments, and returns an object with the arguments as key value pairs.
@@ -13,8 +14,8 @@ import chalk from 'chalk';
  * ◽ "C:\Program Files (x86)"  a string with quates.      ➡️ `{ args: [ 'C:\Program Files (x86)' ] }`.
  * ◽ C:\Users\Public           a string without spaces.   ➡️ `{ args: [ 'C:\Users\Public' ] }`.
  */
-export function argsParser<T>() {
-  const results: T extends { [key: string]: unknown } ? T : { [key: string]: unknown } = Object.assign({});
+export function argsParser<T extends ZodType>(userArgs: T) {
+  const results: z.infer<T> = Object.assign({});
 
   for (const arg of process.argv.slice(2)) {
     const key = arg.startsWith('-')
@@ -43,7 +44,14 @@ export function argsParser<T>() {
 
     if (value !== null) results[key] = value;
   }
-  return results;
+
+  const data = userArgs.safeParse(results);
+  if (!data.success) {
+    data.error.issues;
+    throw new Error(chalk.red('\n' + data.error.issues.map(i => `⛔ [ ${i.path} ] : ${i.message}`).join('\n') + '\n'));
+  }
+
+  return data.data as z.infer<T>;
 }
 
 // ? 💁 See `https://github.com/sindresorhus/cli-spinners/blob/main/spinners.json` for more spinners.
