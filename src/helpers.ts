@@ -60,11 +60,10 @@ const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '
 /** ⚠️ if the terminal's window is resized while the spinner is running, weird behavior may occur. */
 export function progress(message: string, autoStopTimer = 0) {
   let rowNumber: number, // row number
-    id: NodeJS.Timeout; // to save the interval id
+    id: NodeJS.Timeout | null; // to save the interval id
 
   async function start(startMessage = message, timer = autoStopTimer) {
-    stop(); // stop the previous spinner
-    process.stdout.write('\n'); // start with a new line
+    if (id) clearInterval(id);
     process.stdin.setEncoding('utf8'); // set encoding to utf8
     process.stdin.setRawMode(true); // disable buffering
 
@@ -76,8 +75,8 @@ export function progress(message: string, autoStopTimer = 0) {
 
       process.stdin.setRawMode(false); // disable raw mode
 
-      rowNumber = pos.rows; // set row number
-
+      rowNumber = pos.rows - (id ? 1 : 0); // set row number
+      id = null;
       // animate the spinner with a message.
       let i = 0;
       id = setInterval(() => {
@@ -85,7 +84,7 @@ export function progress(message: string, autoStopTimer = 0) {
         process.stdout.clearLine(0); // 🧹 clear first progress line.
         const spinner = chalk.cyan(frames[i++ % frames.length]); // get next frame
         const loadingMessage = chalk.yellow(startMessage); // ✉️ user message.
-        process.stdout.write(`${spinner} ${loadingMessage}`); // 🖨️ print spinner to the console.
+        process.stdout.write(`${spinner}  ${loadingMessage}`); // 🖨️ print spinner to the console.
       }, 80);
     });
 
@@ -118,13 +117,13 @@ export function progress(message: string, autoStopTimer = 0) {
     success: function (endMessage: string) {
       stop();
       const successMessage = chalk.green(`✅ ${endMessage}`); // ✅ success message if isError is false
-      process.stdout.write(`${successMessage}\n`); // 🖨️ print end message to the console.
+      process.stdout.write(`${successMessage}\n\n`); // 🖨️ print end message to the console.
     },
     /** ⛔ stop with an error styled message. */
     error: function (endMessage: string) {
       stop();
       const errorMessage = chalk.red(`⛔ ${endMessage}`); // ⛔ error message if isError is true
-      process.stdout.write(`${errorMessage}\n`); // 🖨️ print end message to the console.
+      process.stdout.write(`${errorMessage}\n\n`); // 🖨️ print end message to the console.
     },
     /** stop with a none styled message. */
     log: function (logMessage: string) {
