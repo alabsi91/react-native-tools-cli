@@ -6,13 +6,13 @@ import { z, ZodType } from 'zod';
  * @example
  * ◽ Valid arguments syntax:
  *
- * ◽ -h                        a boolean flag.            ➡️ `{ h: true }`.
- * ◽ --help                    a boolean flag.            ➡️ `{ help: true }`.
- * ◽ --output=false            a boolean flag.            ➡️ `{ output: false }`.
- * ◽ --name=John               a key-value pair.          ➡️ `{ name: 'John' }`.
- * ◽ --full-name="John Doe"    a key-value pair.          ➡️ `{ fullName: 'John Doe' }`.
- * ◽ "C:\Program Files (x86)"  a string with quates.      ➡️ `{ args: [ 'C:\Program Files (x86)' ] }`.
- * ◽ C:\Users\Public           a string without spaces.   ➡️ `{ args: [ 'C:\Users\Public' ] }`.
+ * ◽ -h                        a boolean flag.            ➡️  { h: true }
+ * ◽ --help                    a boolean flag.            ➡️  { help: true }
+ * ◽ --output=false            a boolean flag.            ➡️  { output: false }
+ * ◽ --name=John               a key-value pair.          ➡️  { name: 'John' }
+ * ◽ --full-name="John Doe"    a key-value pair.          ➡️  { fullName: 'John Doe' }
+ * ◽ "C:\Program Files (x86)"  a string with quates.      ➡️  { args: [ 'C:\\Program Files (x86)' ] }
+ * ◽ C:\Users\Public           a string without spaces.   ➡️  { args: [ 'C:\\Users\\Public' ] }
  */
 export function argsParser<T extends ZodType>(userArgs: T) {
   const results: z.infer<T> = Object.assign({});
