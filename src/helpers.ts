@@ -101,6 +101,7 @@ export function progress(message: string, autoStopTimer = 0) {
   function stop() {
     if (!id) return;
     clearInterval(id); // 🛑 stop the animation.
+    id = null;
     process.stdout.cursorTo(0, rowNumber); // ⤴️ move cursor to the start of the line.
     process.stdout.clearLine(0); // 🧹 clear the progress line.
   }
