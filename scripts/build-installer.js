@@ -5,6 +5,8 @@ import * as fs from 'fs/promises';
 import fetch from 'node-fetch';
 import path from 'path';
 import { promisify } from 'util';
+import ps1_script from './ps1-script.js';
+
 const cmd = promisify(exec);
 
 // ? ⚠️ install NSIS via powershell `winget install NSIS.NSIS`
@@ -81,6 +83,16 @@ const outFolder = 'installer',
     progress(`- "${name}.cmd" file created successfully!`);
   } catch (error) {
     progress('- Error while creating .cmd file!', true);
+    return;
+  }
+
+  // * 📝 create .ps1 file
+  try {
+    progress = loading(`- Creating "${name}.ps1" file ...`);
+    await fs.writeFile(`${outFolder}/${name}.ps1`, ps1_script(outJsFile));
+    progress(`- "${name}.ps1" file created successfully!`);
+  } catch (error) {
+    progress('- Error while creating .ps1 file!', true);
     return;
   }
 

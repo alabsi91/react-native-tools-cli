@@ -79,6 +79,7 @@ Section "${AppName} ${AppVersion}" SecCli
 
   ;ADD YOUR OWN FILES HERE...
   File ${JsFile} "${AppName}.cmd"
+  File ${JsFile} "${AppName}.ps1"
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\${AppName} "Install_Dir" "$INSTDIR"
