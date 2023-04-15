@@ -5,6 +5,8 @@ import * as fs from 'fs/promises';
 import fetch from 'node-fetch';
 import path from 'path';
 import { promisify } from 'util';
+import * as esbuild from 'esbuild';
+
 import { cmd_script, ps1_script, sh_script } from './launch-scripts.js';
 
 const cmd = promisify(exec);
@@ -14,10 +16,10 @@ const cmd = promisify(exec);
 const outFolder = 'installer',
   outJsFile = 'index.cjs',
   entryFile = 'src/index.ts',
-  nodeVersion = '18.6.0',
-  nodeDownloadLink = `https://nodejs.org/dist/v${nodeVersion}/win-x64/node.exe`,
+  nodeVersion = 'latest-v18.x',
+  nodeDownloadLink = `https://nodejs.org/dist/${nodeVersion}/win-x64/node.exe`,
   makensis = path.normalize('C:/Program Files (x86)/NSIS/makensis.exe'), // NSIS cli path.
-  includeNodejs = true, // include nodejs in the installer. makes the installer larger in size.
+  includeNodejs = false, // include nodejs in the installer. makes the installer larger in size.
   cleanAfterBuild = false; // 🗑️ remove all files after build except `installer.exe`
 
 (async function () {
@@ -32,14 +34,14 @@ const outFolder = 'installer',
   // * ⬇️ download node.exe
   if (!existsSync(path.join(outFolder, 'node.exe')) && includeNodejs) {
     try {
-      progress = loading(`- Downloading "node.exe v${nodeVersion}" ...`);
+      progress = loading(`- Downloading "node.exe ${nodeVersion}" ...`);
       const res = await fetch(nodeDownloadLink),
         nodeArrayBuffer = await res.arrayBuffer(),
         nodeFile = Buffer.from(nodeArrayBuffer);
       await fs.writeFile(path.join(outFolder, 'node.exe'), nodeFile);
       progress(`- node.exe v${nodeVersion} downloaded!`);
     } catch (error) {
-      progress(`Error: downloading node.exe v${nodeVersion} failed!`, true);
+      progress(`Error: downloading node.exe ${nodeVersion} failed!`, true);
       return;
     }
   }
@@ -64,9 +66,16 @@ const outFolder = 'installer',
   // * 📦 bundle outJsFile
   try {
     progress = loading('- Bundling JavaScript files ...');
-    await cmd(
-      `npx esbuild ${entryFile} --bundle --platform=node --target=node16 --outdir=${outFolder} --out-extension:.js=.cjs --minify --tree-shaking=true`
-    );
+    await esbuild.build({
+      entryPoints: [entryFile],
+      outdir: outFolder,
+      platform: 'node',
+      target: ['node16'],
+      outExtension: { '.js': '.cjs' },
+      bundle: true,
+      minify: true,
+      treeShaking: true,
+    });
     progress('- JavaScript files Bundled successfully!');
   } catch (error) {
     progress('- Error while bundling JavaScript files !!', true);

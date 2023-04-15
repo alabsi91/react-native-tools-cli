@@ -56,12 +56,12 @@ export const sh_script = fileName => `
 basedir=$(dirname "$(echo "$0" | sed -e 's,\\\\,/,g')")
 
 case \`uname\` in
-    *CYGWIN*|*MINGW*|*MSYS*) basedir=\`cygpath -w "$basedir"\`;;
+    *CYGWIN*|*MINGW*|*MSYS*) basedir=\`cygpath -w "$basedir"\`;
 esac
 
 if [ -x "$basedir/node" ]; then
-  exec "$basedir/node"  "$basedir${fileName}" "$@"
+  exec "$basedir/node"  "$basedir/${fileName}" "$@"
 else 
-  exec node  "$basedir${fileName}" "$@"
+  exec node  "$basedir/${fileName}" "$@"
 fi
 `;
