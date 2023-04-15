@@ -12,6 +12,7 @@
         "PATHEXT",
         "pwsh",
         "SETLOCAL",
+        "tspaths",
         "winget"
     ]
 }
