@@ -1,11 +1,17 @@
 {
     "cSpell.words": [
+        "cygpath",
+        "CYGWIN",
+        "esac",
         "insertmacro",
         "LASTEXITCODE",
         "makensis",
+        "MSYS",
         "NSIS",
         "outfile",
+        "PATHEXT",
         "pwsh",
+        "SETLOCAL",
         "winget"
     ]
 }

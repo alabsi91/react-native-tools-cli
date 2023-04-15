@@ -5,7 +5,7 @@ import * as fs from 'fs/promises';
 import fetch from 'node-fetch';
 import path from 'path';
 import { promisify } from 'util';
-import ps1_script from './ps1-script.js';
+import { cmd_script, ps1_script, sh_script } from './launch-scripts.js';
 
 const cmd = promisify(exec);
 
@@ -76,10 +76,7 @@ const outFolder = 'installer',
   // * 📝 create .cmd file
   try {
     progress = loading(`- Creating "${name}.cmd" file ...`);
-    await fs.writeFile(
-      `${outFolder}/${name}.cmd`,
-      `@echo off\n\nif exist "%~dp0node.exe" ("%~dp0node.exe" "%~dp0${outJsFile}" %*) else (node "%~dp0${outJsFile}" %*)`
-    );
+    await fs.writeFile(`${outFolder}/${name}.cmd`, cmd_script(outJsFile));
     progress(`- "${name}.cmd" file created successfully!`);
   } catch (error) {
     progress('- Error while creating .cmd file!', true);
@@ -93,6 +90,16 @@ const outFolder = 'installer',
     progress(`- "${name}.ps1" file created successfully!`);
   } catch (error) {
     progress('- Error while creating .ps1 file!', true);
+    return;
+  }
+
+  // * 📝 create sh file
+  try {
+    progress = loading(`- Creating "${name}" file ...`);
+    await fs.writeFile(`${outFolder}/${name}`, sh_script(outJsFile));
+    progress(`- "${name}" sh file created successfully!`);
+  } catch (error) {
+    progress('- Error while creating sh file!', true);
     return;
   }
 
