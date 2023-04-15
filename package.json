@@ -16,22 +16,24 @@
     "serve:bundle": "node bundle/index.cjs",
     "build:js": "npx tsc",
     "build:installer": "node --no-warnings scripts/build-installer.js",
-    "build:bundle": "npx esbuild src/index.ts --bundle --platform=node --target=node16 --outdir=bundle --out-extension:.js=.cjs --minify"
+    "build:bundle": "npx esbuild src/index.ts --bundle --platform=node --target=node16 --outdir=bundle --out-extension:.js=.cjs --minify --tree-shaking=true",
+    "prettier ": "prettier --ignore-unknown --write src --config-precedence prefer-file"
   },
   "dependencies": {
-    "chalk": "^5.0.1",
-    "gradient-string": "^2.0.1",
-    "inquirer": "^9.0.2",
-    "node-fetch": "^3.2.10",
-    "zod": "^3.18.0"
+    "chalk": "^5.2.0",
+    "gradient-string": "^2.0.2",
+    "inquirer": "^9.1.5",
+    "node-fetch": "^3.3.1",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@types/gradient-string": "^1.1.2",
-    "@types/inquirer": "^8.2.1",
-    "@typescript-eslint/eslint-plugin": "^5.30.7",
-    "@typescript-eslint/parser": "^5.30.7",
-    "esbuild": "^0.14.50",
+    "@types/inquirer": "^9.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
+    "esbuild": "^0.17.16",
     "eslint": "^8.20.0",
+    "prettier": "^2.8.7",
     "typescript": "^4.7.4"
   },
   "eslintConfig": {

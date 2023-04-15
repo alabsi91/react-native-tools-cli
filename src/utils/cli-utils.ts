@@ -1,5 +1,6 @@
 import chalk from 'chalk';
-import { z, ZodType } from 'zod';
+import { z } from 'zod';
+import type { ZodType, SafeParseReturnType } from 'zod';
 
 /**
  * - It takes the command line arguments, and returns an object with the arguments as key value pairs.
@@ -11,7 +12,7 @@ import { z, ZodType } from 'zod';
  * ◽ --output=false            a boolean flag.            ➡️  { output: false }
  * ◽ --name=John               a key-value pair.          ➡️  { name: 'John' }
  * ◽ --full-name="John Doe"    a key-value pair.          ➡️  { fullName: 'John Doe' }
- * ◽ "C:\Program Files (x86)"  a string with quates.      ➡️  { args: [ 'C:\\Program Files (x86)' ] }
+ * ◽ "C:\Program Files (x86)"  a string with quotes.      ➡️  { args: [ 'C:\\Program Files (x86)' ] }
  * ◽ C:\Users\Public           a string without spaces.   ➡️  { args: [ 'C:\\Users\\Public' ] }
  */
 export function argsParser<T extends ZodType>(userArgs: T) {
@@ -25,7 +26,7 @@ export function argsParser<T extends ZodType>(userArgs: T) {
             .replace(/-\w/gi, t => t.substring(1).toUpperCase())
         : 'args', // get arg name
       boolean = /^--.+=\bfalse\b/.test(arg) ? false : /^-\w$|^--[^=]+$/.test(arg) ? true : null,
-      number = /^--.+=\d+$/.test(arg) ? +arg.replace(/^--.+=/, '') : null,
+      number = /--.+=[-+]?(\d*\.)?\d+$/.test(arg) ? +arg.replace(/^--.+=/, '') : null,
       string = !number && /^--.+=.+$/.test(arg) ? arg.replace(/^--.+=/, '') : null,
       withoutFlag = !arg.startsWith('-') ? arg : null, // single string argument without a flag (e.g. 'C:\Program Files (x86)')
       value = number ?? boolean ?? string ?? withoutFlag;
@@ -45,13 +46,9 @@ export function argsParser<T extends ZodType>(userArgs: T) {
     if (value !== null) results[key] = value;
   }
 
-  const data = userArgs.safeParse(results);
-  if (!data.success) {
-    data.error.issues;
-    throw new Error(chalk.red('\n' + data.error.issues.map(i => `⛔ [ ${i.path} ] : ${i.message}`).join('\n') + '\n'));
-  }
+  const data: SafeParseReturnType<T, z.infer<T>> = userArgs.safeParse(results);
 
-  return data.data as z.infer<T>;
+  return data;
 }
 
 // ? 💁 See `https://github.com/sindresorhus/cli-spinners/blob/main/spinners.json` for more spinners.
@@ -136,4 +133,54 @@ export function progress(message: string, autoStopTimer = 0) {
 
 export function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+interface Option {
+  flags: string;
+  description: string;
+}
+interface PositionalArgument {
+  name: string;
+  description: string;
+}
+interface Options {
+  scriptName: string;
+  description: string;
+  optionsList: Option[];
+  examples?: string[];
+  positionalArguments?: PositionalArgument[];
+}
+
+export function printHelpMessage(options: Options): void {
+  console.log(chalk.bold('\ndescription:'));
+  console.log('  ', options.description);
+  console.log(chalk.bold('\nUsage:'));
+  console.log(
+    `  ${options.scriptName} [options]${
+      options.positionalArguments ? `, ${options.positionalArguments.map(arg => `<${arg.name}>`).join(', ')}` : ''
+    }\n`
+  );
+  console.log(chalk.bold('Options:'));
+
+  for (const option of options.optionsList) {
+    console.log(`  ${chalk.yellow(option.flags)},`);
+    console.log(`    ${option.description}\n`);
+  }
+
+  if (options.positionalArguments) {
+    console.log(chalk.bold('Positional Arguments:'));
+
+    for (const arg of options.positionalArguments) {
+      console.log(`  ${chalk.yellow(arg.name)},`);
+      console.log(`    ${arg.description}\n`);
+    }
+  }
+
+  if (options.examples) {
+    console.log(chalk.bold('Examples:\n'));
+
+    for (const example of options.examples) {
+      console.log(`  ${chalk.gray(example)},`);
+    }
+  }
 }

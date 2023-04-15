@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
-import inquirer from 'inquirer';
 import chalk from 'chalk';
 import z from 'zod';
 import gradient from 'gradient-string';
-import { argsParser, progress, sleep } from './helpers.js';
+
+import { argsParser as parseArguments, progress, sleep } from '@utils/cli-utils.js';
+import printHelp from '@commands/help.js';
+import askForName from '@commands/askName.js';
+import askForAge from '@commands/askAge.js';
 
 // ? 👇 title text gradient colors. for more colors see: `https://cssgradient.io/gradient-backgrounds`
 const coolGradient = gradient([
@@ -22,38 +25,46 @@ console.log(
 );
 
 // 👇 your expected arguments, used for autocomplete and validation.
-const myArgs = z.object({
-  name: z.string().optional(), // --name=<name>
-  fullName: z.string().optional(), // --full-name="<full-name>"
-  age: z.number().optional(), // --age=<age>
-  h: z.boolean().optional(), // -h
-  args: z.array(z.string()).optional(), // E.g "C:\Program Files (x86)"
-});
-
-try {
-  const args = argsParser(myArgs);
-  console.log('args :', args);
-} catch (err) {
-  console.log(chalk.red(err));
-}
+const arguments_shape = z
+  .object({
+    fullName: z.string().optional(), // --full-name="string string"
+    age: z.number().optional(), // --age=number
+    help: z.boolean().optional().default(false), // --help=boolean or just --help
+    h: z.boolean().optional().default(false), // -h
+    args: z.array(z.string()).optional(), // positional arguments E.g "C:\Program Files (x86)"
+  })
+  // throw an error on extra keys
+  .strict();
 
 async function app() {
-  type answersT = { name: string };
+  const parsedArguments = parseArguments(arguments_shape);
 
-  // ❔ Ask for user input.
-  const { name } = await inquirer.prompt<answersT>([
-    {
-      type: 'input',
-      name: 'name',
-      default: 'John Doe',
-      message: 'Enter your name :',
-    },
-  ]);
+  // when parsing arguments fails
+  if (!parsedArguments.success) {
+    const { issues } = parsedArguments.error;
+    console.log(chalk.red('\n' + issues.map(i => `⛔ [ ${i.path} ] : ${i.message}`).join('\n') + '\n'));
+
+    printHelp();
+
+    process.exit(1);
+  }
+
+  const { h, help, age, fullName } = parsedArguments.data;
+
+  // print help
+  if (h || help) {
+    printHelp();
+    process.exit(1);
+  }
+
+  const userName = fullName ?? (await askForName());
+  const userAge = age ?? (await askForAge());
 
   // 👇 Example for creating a spinner.
   const loading = progress('Processing...');
   await sleep(5000); // 🕐
-  loading.log(`Hello ${name}! 👋`); // stop with a success message.
+  // stop with a success message.
+  loading.log(`Your name is "${userName}" and your age is "${userAge}"`);
 }
 
 app(); // 🚀 Start the app.

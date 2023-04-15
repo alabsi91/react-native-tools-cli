@@ -65,7 +65,7 @@ const outFolder = 'installer',
   try {
     progress = loading('- Bundling JavaScript files ...');
     await cmd(
-      `npx esbuild ${entryFile} --bundle --platform=node --target=node16 --outdir=${outFolder} --out-extension:.js=.cjs --minify`
+      `npx esbuild ${entryFile} --bundle --platform=node --target=node16 --outdir=${outFolder} --out-extension:.js=.cjs --minify --tree-shaking=true`
     );
     progress('- JavaScript files Bundled successfully!');
   } catch (error) {

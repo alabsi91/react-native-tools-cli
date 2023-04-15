@@ -1,4 +1,4 @@
-import esbuild from 'esbuild';
+import * as esbuild from 'esbuild';
 import chalk from 'chalk';
 import { spawn } from 'child_process';
 
@@ -7,10 +7,28 @@ const entryPoint = './src/index.ts';
 
 let worker;
 
+const plugins = [
+  {
+    name: 'my-plugin',
+    setup(build) {
+      build.onEnd(result => {
+        if (result.errors.length) {
+          console.error(chalk.red('⛔ Build failed !!'));
+          console.log(chalk.yellow('\n🕐 Waiting for new changes ...\n'));
+          return;
+        }
+
+        // run if file changes
+        run();
+      });
+    },
+  },
+];
+
 (async function () {
   // 📦 bundle typescript files into one js file, and watch for changes.
   try {
-    await esbuild.build({
+    const context = await esbuild.context({
       entryPoints: [entryPoint],
       external: ['./node_modules/*'],
       platform: 'node',
@@ -18,22 +36,13 @@ let worker;
       format: 'esm',
       bundle: true,
       define: { DEBUG: 'true' },
-      watch: {
-        async onRebuild(error) {
-          if (error) {
-            console.error(chalk.red('⛔ Build failed !!'));
-            console.log(chalk.yellow('\n🕐 Waiting for new changes ...\n'));
-            return;
-          }
-
-          run(); // run if file changes
-        },
-      },
+      plugins,
     });
 
-    run(); // first run
+    // Enable watch mode
+    await context.watch();
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 })();
 
@@ -53,9 +62,7 @@ async function run() {
 
   //🔥 start new worker
   console.log(chalk.yellow(`\n👀 Watching for changes in "./src/**/*" ...\n`));
-  worker = spawn('node', [outfile], {
-    stdio: 'inherit',
-  });
+  worker = spawn('node', [outfile, ...process.argv.slice(2)], { stdio: 'inherit' });
 
   //👂 listen for worker exit signal.
   worker.on('exit', async code => {
