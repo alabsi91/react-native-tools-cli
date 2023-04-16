@@ -3,7 +3,8 @@
     "baseUrl": ".",
     "paths": {
       "@commands/*" : ["src/commands/*"],
-      "@utils/*" : ["src/utils/*"]
+      "@utils/*" : ["src/utils/*"],
+      "@cli" : ["src/utils/cli-utils.js"]
     },
     "module": "Node16",
     "target": "ESNext",
@@ -13,7 +14,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "removeComments": true,
-    // "skipLibCheck": true,
+    "skipLibCheck": true,
     // "resolveJsonModule": true,
   },
   "include": ["src"],

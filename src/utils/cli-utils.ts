@@ -1,5 +1,7 @@
 import chalk from 'chalk';
 import { z } from 'zod';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import type { ZodType, SafeParseReturnType } from 'zod';
 
 /**
@@ -129,6 +131,12 @@ export function progress(message: string, autoStopTimer = 0) {
       process.stdout.write(logMessage); // 🖨️ print end message to the console.
     },
   };
+}
+
+/** Spawns a shell then executes the command within that shell. */
+export async function $(strings: TemplateStringsArray, ...values: string[]): Promise<string> {
+  const command = strings.reduce((acc, str, i) => acc + str + (values[i] ?? ''), '');
+  return (await promisify(exec)(command)).stdout.trim();
 }
 
 export function sleep(ms: number) {

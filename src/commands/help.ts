@@ -1,4 +1,4 @@
-import { printHelpMessage } from '../utils/cli-utils.js';
+import { printHelpMessage } from '@cli';
 
 export default function printHelp() {
   printHelpMessage({

@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import z from 'zod';
 import gradient from 'gradient-string';
 
-import { argsParser as parseArguments, progress, sleep } from '@utils/cli-utils.js';
+import { $, argsParser as parseArguments, progress, sleep } from '@cli';
 import printHelp from '@commands/help.js';
 import askForName from '@commands/askName.js';
 import askForAge from '@commands/askAge.js';
@@ -59,12 +59,18 @@ async function app() {
 
   const userName = fullName ?? (await askForName());
   const userAge = age ?? (await askForAge());
+  // execute a shell command
+  const windowsUser = await $`@powershell $env:UserName`;
 
   // 👇 Example for creating a spinner.
   const loading = progress('Processing...');
   await sleep(5000); // 🕐
   // stop with a success message.
-  loading.log(`Your name is "${userName}" and your age is "${userAge}"`);
+  loading.log(
+    `Your name is "${chalk.yellow(userName)}", your age is "${chalk.yellow(userAge)}", and your username is "${chalk.yellow(
+      windowsUser
+    )}"`
+  );
 }
 
 app(); // 🚀 Start the app.
