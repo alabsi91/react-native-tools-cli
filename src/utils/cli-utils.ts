@@ -17,7 +17,7 @@ import type { ZodType, SafeParseReturnType } from 'zod';
  * ◽ "C:\Program Files (x86)"  a string with quotes.      ➡️  { args: [ 'C:\\Program Files (x86)' ] }
  * ◽ C:\Users\Public           a string without spaces.   ➡️  { args: [ 'C:\\Users\\Public' ] }
  */
-export function argsParser<T extends ZodType>(userArgs: T) {
+export function parseArguments<T extends ZodType>(userArgs: T) {
   const results: z.infer<T> = Object.assign({});
 
   for (const arg of process.argv.slice(2)) {

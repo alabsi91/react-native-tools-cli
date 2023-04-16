@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import z from 'zod';
 import gradient from 'gradient-string';
 
-import { $, argsParser as parseArguments, progress, sleep } from '@cli';
+import { $, parseArguments, progress, sleep } from '@cli';
 import printHelp from '@commands/help.js';
 import askForName from '@commands/askName.js';
 import askForAge from '@commands/askAge.js';
