@@ -78,9 +78,7 @@ Section "${AppName} ${AppVersion}" SecCli
   SetOutPath $INSTDIR
 
   ;ADD YOUR OWN FILES HERE...
-  File ${JsFile} "${AppName}.cmd"
-  File ${JsFile} "${AppName}.ps1"
-  File ${JsFile} "${AppName}"
+  File ${JsFile} "${AppName}.cmd" "${AppName}.ps1" "${AppName}"
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\${AppName} "Install_Dir" "$INSTDIR"
