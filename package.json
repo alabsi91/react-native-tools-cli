@@ -17,7 +17,8 @@
     "build:bundle": "esbuild src/index.ts --bundle --platform=node --target=node16 --outdir=bundle --out-extension:.js=.cjs --minify --tree-shaking=true",
     "serve:build": "node dist/index.js",
     "serve:bundle": "node bundle/index.cjs",
-    "prettier ": "prettier --ignore-unknown --write src --config-precedence prefer-file"
+    "prettier ": "prettier --ignore-unknown --write src --config-precedence prefer-file",
+    "prepare": "npm run build:js"
   },
   "dependencies": {
     "chalk": "^5.2.0",
