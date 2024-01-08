@@ -4,7 +4,8 @@
     "paths": {
       "@commands/*" : ["src/commands/*"],
       "@utils/*" : ["src/utils/*"],
-      "@cli" : ["src/utils/cli-utils.js"]
+      "@cli" : ["src/utils/cli-utils.js"],
+      "@types" : ["src/types.js"]
     },
     "module": "Node16",
     "target": "ESNext",
