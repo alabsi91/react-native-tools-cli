@@ -6,16 +6,17 @@ import type { ZodType, SafeParseReturnType } from 'zod';
 
 /**
  * - It takes the command line arguments, and returns an object with the arguments as key value pairs.
- * @example
- * ◽ Valid arguments syntax:
  *
- * ◽ -h                        a boolean flag.            ➡️  { h: true }
- * ◽ --help                    a boolean flag.            ➡️  { help: true }
- * ◽ --output=false            a boolean flag.            ➡️  { output: false }
- * ◽ --name=John               a key-value pair.          ➡️  { name: 'John' }
- * ◽ --full-name="John Doe"    a key-value pair.          ➡️  { fullName: 'John Doe' }
- * ◽ "C:\Program Files (x86)"  a string with quotes.      ➡️  { args: [ 'C:\\Program Files (x86)' ] }
- * ◽ C:\Users\Public           a string without spaces.   ➡️  { args: [ 'C:\\Users\\Public' ] }
+ * @example
+ *   ◽ Valid arguments syntax:
+ *
+ *   ◽ -h                        a boolean flag.            ➡️  { h: true }
+ *   ◽ --help                    a boolean flag.            ➡️  { help: true }
+ *   ◽ --output=false            a boolean flag.            ➡️  { output: false }
+ *   ◽ --name=John               a key-value pair.          ➡️  { name: 'John' }
+ *   ◽ --full-name="John Doe"    a key-value pair.          ➡️  { fullName: 'John Doe' }
+ *   ◽ "C:\Program Files (x86)"  a string with quotes.      ➡️  { args: [ 'C:\\Program Files (x86)' ] }
+ *   ◽ C:\Users\Public           a string without spaces.   ➡️  { args: [ 'C:\\Users\\Public' ] }
  */
 export function parseArguments<T extends ZodType>(userArgs: T) {
   const results: z.infer<T> = Object.assign({});
@@ -56,7 +57,17 @@ export function parseArguments<T extends ZodType>(userArgs: T) {
 // ? 💁 See `https://github.com/sindresorhus/cli-spinners/blob/main/spinners.json` for more spinners.
 const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
-/** ⚠️ if the terminal's window is resized while the spinner is running, weird behavior may occur. */
+/**
+ * ⚠️ if the terminal's window is resized while the spinner is running, weird behavior may occur.
+ *
+ * @example
+ *   const loading = progress('Loading...'); // start the spinner
+ *   loading.start('Downloading...'); // update the message without stopping the spinner
+ *   loading.error('Error...'); // stop the spinner and print an styled message
+ *   loading.success('Success!'); // stop the spinner and print an styled message
+ *   loading.log('Log...'); // stop the spinner and print a message without styling
+ *   loading.stop(); // stop the spinner
+ */
 export function progress(message: string, autoStopTimer = 0) {
   let rowNumber: number, // row number
     id: NodeJS.Timeout | null; // to save the interval id
@@ -125,7 +136,7 @@ export function progress(message: string, autoStopTimer = 0) {
       const errorMessage = chalk.red(`⛔ ${endMessage}`); // ⛔ error message if isError is true
       process.stdout.write(`${errorMessage}\n\n`); // 🖨️ print end message to the console.
     },
-    /** stop with a none styled message. */
+    /** Stop with a none styled message. */
     log: function (logMessage: string) {
       stop();
       process.stdout.write(logMessage); // 🖨️ print end message to the console.
@@ -166,7 +177,7 @@ export function printHelpMessage(options: Options): void {
   console.log(
     `  ${options.scriptName} [options]${
       options.positionalArguments ? `, ${options.positionalArguments.map(arg => `<${arg.name}>`).join(', ')}` : ''
-    }\n`
+    }\n`,
   );
   console.log(chalk.bold('Options:'));
 
