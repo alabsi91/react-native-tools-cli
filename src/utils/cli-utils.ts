@@ -1,8 +1,10 @@
 import chalk from 'chalk';
-import { z } from 'zod';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import type { ZodType, SafeParseReturnType } from 'zod';
+import { z } from 'zod';
+
+import type { ExecOptions } from 'child_process';
+import type { SafeParseReturnType, ZodType } from 'zod';
 
 /**
  * - It takes the command line arguments, and returns an object with the arguments as key value pairs.
@@ -144,10 +146,18 @@ export function progress(message: string, autoStopTimer = 0) {
   };
 }
 
-/** Spawns a shell then executes the command within that shell. */
-export async function $(strings: TemplateStringsArray, ...values: string[]): Promise<string> {
-  const command = strings.reduce((acc, str, i) => acc + str + (values[i] ?? ''), '');
-  return (await promisify(exec)(command)).stdout.trim();
+/**
+ * - Spawns a shell then executes the command within that shell.
+ *
+ * @example
+ *   const stdout = await $`node -v`;
+ *   // you can pass options, just make sure to pass it at the last:
+ *   const stdout = await $`node -v ${{ cwd: 'project' }}`;
+ */
+export async function $(strings: TemplateStringsArray, ...values: [] | string[] | [...string[], ExecOptions]): Promise<string> {
+  const command = strings.reduce((acc, str, i) => acc + str + (typeof values[i] === 'string' ? values[i] : ''), '');
+  const options = (typeof values[values.length - 1] === 'object' ? values.pop() : {}) as ExecOptions;
+  return (await promisify(exec)(command, options)).stdout.trim();
 }
 
 export function sleep(ms: number) {
