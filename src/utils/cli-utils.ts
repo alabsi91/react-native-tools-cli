@@ -1,21 +1,24 @@
 import chalk from 'chalk';
-import { z } from 'zod';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
-import type { ZodType, SafeParseReturnType } from 'zod';
+import { z } from 'zod';
+
+import type { ExecOptions, SpawnOptions } from 'child_process';
+import type { SafeParseReturnType, ZodType } from 'zod';
 
 /**
  * - It takes the command line arguments, and returns an object with the arguments as key value pairs.
- * @example
- * ◽ Valid arguments syntax:
  *
- * ◽ -h                        a boolean flag.            ➡️  { h: true }
- * ◽ --help                    a boolean flag.            ➡️  { help: true }
- * ◽ --output=false            a boolean flag.            ➡️  { output: false }
- * ◽ --name=John               a key-value pair.          ➡️  { name: 'John' }
- * ◽ --full-name="John Doe"    a key-value pair.          ➡️  { fullName: 'John Doe' }
- * ◽ "C:\Program Files (x86)"  a string with quotes.      ➡️  { args: [ 'C:\\Program Files (x86)' ] }
- * ◽ C:\Users\Public           a string without spaces.   ➡️  { args: [ 'C:\\Users\\Public' ] }
+ * @example
+ *   ◽ Valid arguments syntax:
+ *
+ *   ◽ -h                        a boolean flag.            ➡️  { h: true }
+ *   ◽ --help                    a boolean flag.            ➡️  { help: true }
+ *   ◽ --output=false            a boolean flag.            ➡️  { output: false }
+ *   ◽ --name=John               a key-value pair.          ➡️  { name: 'John' }
+ *   ◽ --full-name="John Doe"    a key-value pair.          ➡️  { fullName: 'John Doe' }
+ *   ◽ "C:\Program Files (x86)"  a string with quotes.      ➡️  { args: [ 'C:\\Program Files (x86)' ] }
+ *   ◽ C:\Users\Public           a string without spaces.   ➡️  { args: [ 'C:\\Users\\Public' ] }
  */
 export function parseArguments<T extends ZodType>(userArgs: T) {
   const results: z.infer<T> = Object.assign({});
@@ -56,7 +59,17 @@ export function parseArguments<T extends ZodType>(userArgs: T) {
 // ? 💁 See `https://github.com/sindresorhus/cli-spinners/blob/main/spinners.json` for more spinners.
 const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
-/** ⚠️ if the terminal's window is resized while the spinner is running, weird behavior may occur. */
+/**
+ * ⚠️ if the terminal's window is resized while the spinner is running, weird behavior may occur.
+ *
+ * @example
+ *   const loading = progress('Loading...'); // start the spinner
+ *   loading.start('Downloading...'); // update the message without stopping the spinner
+ *   loading.error('Error...'); // stop the spinner and print an styled message
+ *   loading.success('Success!'); // stop the spinner and print an styled message
+ *   loading.log('Log...'); // stop the spinner and print a message without styling
+ *   loading.stop(); // stop the spinner
+ */
 export function progress(message: string, autoStopTimer = 0) {
   let rowNumber: number, // row number
     id: NodeJS.Timeout | null; // to save the interval id
@@ -125,7 +138,7 @@ export function progress(message: string, autoStopTimer = 0) {
       const errorMessage = chalk.red(`⛔ ${endMessage}`); // ⛔ error message if isError is true
       process.stdout.write(`${errorMessage}\n\n`); // 🖨️ print end message to the console.
     },
-    /** stop with a none styled message. */
+    /** Stop with a none styled message. */
     log: function (logMessage: string) {
       stop();
       process.stdout.write(logMessage); // 🖨️ print end message to the console.
@@ -133,62 +146,63 @@ export function progress(message: string, autoStopTimer = 0) {
   };
 }
 
-/** Spawns a shell then executes the command within that shell. */
-export async function $(strings: TemplateStringsArray, ...values: string[]): Promise<string> {
-  const command = strings.reduce((acc, str, i) => acc + str + (values[i] ?? ''), '');
-  return (await promisify(exec)(command)).stdout.trim();
+/**
+ * - Spawns a shell then executes the command within that shell.
+ *
+ * @example
+ *   const stdout = await $`node -v`;
+ *   // you can pass options, just make sure to pass it at the last:
+ *   const stdout = await $`node -v ${{ cwd: 'project' }}`;
+ */
+export async function $(strings: TemplateStringsArray, ...values: [] | string[] | [...string[], ExecOptions]): Promise<string> {
+  const command = strings.reduce((acc, str, i) => acc + str + (typeof values[i] === 'string' ? values[i] : ''), '');
+  const options = (typeof values[values.length - 1] === 'object' ? values.pop() : {}) as ExecOptions;
+  return (await promisify(exec)(command, options)).stdout.trim();
+}
+
+export function executeCommand(command: string, args: readonly string[], options: SpawnOptions) {
+  return new Promise((resolve, reject) => {
+    const childProcess = spawn(command, args, options);
+    const output = '';
+
+    childProcess.on('close', code => {
+      if (code === 0) {
+        resolve(output);
+        return;
+      }
+
+      reject(new Error(`Command exited with code ${code}`));
+    });
+  });
+}
+
+/**
+ * - Execute a command in the shell, and pass the stdout to the parent process.
+ *
+ * @example
+ *   await cmdPassThrough`node -v`;
+ *   // you can pass options, just make sure to pass it at the last:
+ *   await cmdPassThrough`node -v ${{ cwd: 'project' }}`;
+ */
+export function cmdPassThrough(strings: TemplateStringsArray, ...values: [] | string[] | [...string[], SpawnOptions]) {
+  const strArr = strings
+    .reduce((acc, str, i) => acc + str + (typeof values[i] === 'string' ? values[i] : ''), '')
+    .split(' ')
+    .filter(Boolean);
+  const command = strArr[0];
+  const args = strArr.slice(1);
+  const options = (typeof values[values.length - 1] === 'object' ? values.pop() : {}) as SpawnOptions;
+  return executeCommand(command, args, { stdio: 'inherit', shell: true, ...options });
 }
 
 export function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-interface Option {
-  flags: string;
-  description: string;
-}
-interface PositionalArgument {
-  name: string;
-  description: string;
-}
-interface Options {
-  scriptName: string;
-  description: string;
-  optionsList: Option[];
-  examples?: string[];
-  positionalArguments?: PositionalArgument[];
-}
-
-export function printHelpMessage(options: Options): void {
-  console.log(chalk.bold('\ndescription:'));
-  console.log('  ', options.description);
-  console.log(chalk.bold('\nUsage:'));
-  console.log(
-    `  ${options.scriptName} [options]${
-      options.positionalArguments ? `, ${options.positionalArguments.map(arg => `<${arg.name}>`).join(', ')}` : ''
-    }\n`
-  );
-  console.log(chalk.bold('Options:'));
-
-  for (const option of options.optionsList) {
-    console.log(`  ${chalk.yellow(option.flags)},`);
-    console.log(`    ${option.description}\n`);
-  }
-
-  if (options.positionalArguments) {
-    console.log(chalk.bold('Positional Arguments:'));
-
-    for (const arg of options.positionalArguments) {
-      console.log(`  ${chalk.yellow(arg.name)},`);
-      console.log(`    ${arg.description}\n`);
-    }
-  }
-
-  if (options.examples) {
-    console.log(chalk.bold('Examples:\n'));
-
-    for (const example of options.examples) {
-      console.log(`  ${chalk.gray(example)},`);
-    }
-  }
+/** Removes ANSI escape codes for terminal colors from a given input string. */
+export function cleanTerminalColors(inputString: string) {
+  // eslint-disable-next-line no-control-regex
+  const colorRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+  const cleanedString = inputString.replace(colorRegex, '');
+  return cleanedString;
 }

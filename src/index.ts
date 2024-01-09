@@ -1,13 +1,21 @@
 #!/usr/bin/env node
 
 import chalk from 'chalk';
-import z from 'zod';
 import gradient from 'gradient-string';
+import z from 'zod';
 
-import { $, parseArguments, progress, sleep } from '@cli';
-import printHelp from '@commands/help.js';
-import askForName from '@commands/askName.js';
-import askForAge from '@commands/askAge.js';
+import { parseArguments } from '@cli';
+import { askForCommand } from '@utils/utils.js';
+import { emulatorCommand } from './commands/emulator.js';
+
+import { helpCommand } from '@commands/help.js';
+import { runAndroidAppCommand } from '@commands/launchAndroidApp.js';
+import { buildCommand } from './commands/build.js';
+import { installApkCommand } from './commands/installApk.js';
+import { startServerCommand } from './commands/startServer.js';
+import { generateAndroidFontsCommand } from '@commands/androidFonts.js';
+
+import type { Commands } from '@types';
 
 // ? 👇 title text gradient colors. for more colors see: `https://cssgradient.io/gradient-backgrounds`
 const coolGradient = gradient([
@@ -20,21 +28,44 @@ const coolGradient = gradient([
 // ? `https://codebeautify.org/javascript-escape-unescape` 👈 escape your title's string for JavaScript.
 console.log(
   coolGradient(
-    ' ___   __    ______   ______   ______         _________  ______       ______   __        ________    \n/__/\\ /__/\\ /_____/\\ /_____/\\ /_____/\\       /________/\\/_____/\\     /_____/\\ /_/\\      /_______/\\   \n\\::\\_\\\\  \\ \\\\:::_ \\ \\\\:::_ \\ \\\\::::_\\/_      \\__.::.__\\/\\::::_\\/_    \\:::__\\/ \\:\\ \\     \\__.::._\\/   \n \\:. `-\\  \\ \\\\:\\ \\ \\ \\\\:\\ \\ \\ \\\\:\\/___/\\   ___ /_\\::\\ \\  \\:\\/___/\\    \\:\\ \\  __\\:\\ \\       \\::\\ \\    \n  \\:. _    \\ \\\\:\\ \\ \\ \\\\:\\ \\ \\ \\\\::___\\/_ /__/\\\\:.\\::\\ \\  \\_::._\\:\\    \\:\\ \\/_/\\\\:\\ \\____  _\\::\\ \\__ \n   \\. \\`-\\  \\ \\\\:\\_\\ \\ \\\\:\\/.:| |\\:\\____/\\\\::\\ \\\\: \\  \\ \\   /____\\:\\    \\:\\_\\ \\ \\\\:\\/___/\\/__\\::\\__/\\\n    \\__\\/ \\__\\/ \\_____\\/ \\____/_/ \\_____\\/ \\:_\\/ \\_____\\/   \\_____\\/     \\_____\\/ \\_____\\/\\________\\/\n                                                                                                     \n'
-  )
+    ' _____                 _   _   _       _   _           _______          _     \n|  __ \\               | | | \\ | |     | | (_)         |__   __|        | |    \n| |__) |___  __ _  ___| |_|  \\| | __ _| |_ ___   _____   | | ___   ___ | |___ \n|  _  // _ \\/ _` |/ __| __| . ` |/ _` | __| \\ \\ / / _ \\  | |/ _ \\ / _ \\| / __|\n| | \\ |  __| (_| | (__| |_| |\\  | (_| | |_| |\\ V |  __/  | | (_) | (_) | \\__ \\\n|_|  \\_\\___|\\__,_|\\___|\\__|_| \\_|\\__,_|\\__|_| \\_/ \\___|  |_|\\___/ \\___/|_|___/\n',
+  ),
 );
 
 // 👇 your expected arguments, used for autocomplete and validation.
 const arguments_shape = z
   .object({
-    fullName: z.string().optional(), // --full-name="string string"
-    age: z.number().optional(), // --age=number
-    help: z.boolean().optional().default(false), // --help=boolean or just --help
-    h: z.boolean().optional().default(false), // -h
+    // help
+    help: z.boolean().optional(),
+    h: z.boolean().optional(),
+
+    // --device="string string"
+    device: z.string().optional(),
+    // --path="path/to/dir" react native root project path
+    path: z.string().optional(),
+
+    // clear cache
+    clear: z.boolean().optional(),
+    c: z.boolean().optional(),
+
+    // debug
+    debug: z.boolean().optional(),
+    d: z.boolean().optional(),
+
+    // release
+    release: z.boolean().optional(),
+    r: z.boolean().optional(),
+
+    apkDebug: z.boolean().optional(),
+    apkRelease: z.boolean().optional(),
+    bundleDebug: z.boolean().optional(),
+    bundleRelease: z.boolean().optional(),
+    clean: z.boolean().optional(),
+    stop: z.boolean().optional(),
+
     args: z.array(z.string()).optional(), // positional arguments E.g "C:\Program Files (x86)"
   })
-  // throw an error on extra keys
-  .strict();
+  .strict(); // throw an error on extra keys
 
 async function app() {
   const parsedArguments = parseArguments(arguments_shape);
@@ -43,34 +74,77 @@ async function app() {
   if (!parsedArguments.success) {
     const { issues } = parsedArguments.error;
     console.log(chalk.red('\n' + issues.map(i => `⛔ [ ${i.path} ] : ${i.message}`).join('\n') + '\n'));
-
-    printHelp();
-
+    helpCommand();
     process.exit(1);
   }
 
-  const { h, help, age, fullName } = parsedArguments.data;
+  const { args, help, h } = parsedArguments.data;
 
-  // print help
-  if (h || help) {
-    printHelp();
-    process.exit(1);
+  // print help if passed as an option
+  if (help || h) {
+    helpCommand();
+    return;
   }
 
-  const userName = fullName ?? (await askForName());
-  const userAge = age ?? (await askForAge());
-  // execute a shell command
-  const windowsUser = await $`@powershell $env:UserName`;
+  const isCommandPassed = args && args.length > 0;
+  const command = isCommandPassed ? (args[0] as Commands) : await askForCommand();
 
-  // 👇 Example for creating a spinner.
-  const loading = progress('Processing...');
-  await sleep(5000); // 🕐
-  // stop with a success message.
-  loading.log(
-    `Your name is "${chalk.yellow(userName)}", your age is "${chalk.yellow(userAge)}", and your username is "${chalk.yellow(
-      windowsUser
-    )}"`
-  );
+  // print help if passed as a command
+  if (command === 'help') {
+    helpCommand();
+    return;
+  }
+
+  if (command === 'emulator') {
+    const { device } = parsedArguments.data;
+    await emulatorCommand(device);
+    return;
+  }
+
+  if (command === 'start-server') {
+    const { device, clear, c, path } = parsedArguments.data;
+    await startServerCommand(device, clear || c, path);
+    return;
+  }
+
+  if (command === 'install-apk') {
+    const { device, debug, d, release, r, path } = parsedArguments.data;
+    const variant = debug || d ? 'debug' : release || r ? 'release' : undefined;
+    await installApkCommand(device, variant, path);
+    return;
+  }
+
+  if (command === 'launch-app') {
+    const { device, path } = parsedArguments.data;
+    await runAndroidAppCommand(device, path);
+    return;
+  }
+
+  if (command === 'build') {
+    const { apkDebug, apkRelease, bundleDebug, bundleRelease, clean, stop, path } = parsedArguments.data;
+    const operation = apkRelease
+      ? 'apkRelease'
+      : apkDebug
+        ? 'apkDebug'
+        : bundleRelease
+          ? 'bundleRelease'
+          : bundleDebug
+            ? 'bundleDebug'
+            : clean
+              ? 'clean'
+              : stop
+                ? 'stop'
+                : undefined;
+
+    await buildCommand(operation, path);
+    return;
+  }
+
+  if (command === 'generate-fonts') {
+    const { path } = parsedArguments.data;
+    await generateAndroidFontsCommand(path);
+    return;
+  }
 }
 
 app(); // 🚀 Start the app.
