@@ -138,6 +138,17 @@ const schema: HelpSchema = {
         },
       ],
     },
+    {
+      command: 'generate-key',
+      options: [
+        { description: 'Setup a storekey on Android:' },
+        {
+          syntaxes: ['--path="path/to/project"'],
+          isRequired: false,
+          description: 'Specify the React Native root project path.',
+        },
+      ],
+    },
   ],
 };
 

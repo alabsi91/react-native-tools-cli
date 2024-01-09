@@ -1,5 +1,4 @@
-export type Commands = 'emulator' | 'start-server' | 'install-apk' | 'launch-app' | 'build' | 'generate-fonts' | 'help';
-export type CommandsTuple = ['emulator', 'start-server', 'install-apk', 'launch-app', 'build', 'generate-fonts', 'help'];
+import type { Commands } from '@utils/utils.js';
 
 export type HelpSchema = {
   name: string;

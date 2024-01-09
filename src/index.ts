@@ -7,11 +7,12 @@ import { Log, parseArguments } from '@cli';
 import { generateAndroidFontsCommand } from '@commands/androidFonts.js';
 import { buildCommand } from '@commands/build.js';
 import { emulatorCommand } from '@commands/emulator.js';
+import { generateAndroidKeyCommand } from '@commands/generateAndroidKey.js';
 import { helpCommand } from '@commands/help.js';
 import { installApkCommand } from '@commands/installApk.js';
 import { runAndroidAppCommand } from '@commands/launchAndroidApp.js';
 import { startServerCommand } from '@commands/startServer.js';
-import { askForCommand } from '@utils/utils.js';
+import { COMMANDS, askForCommand, unionOfLiterals } from '@utils/utils.js';
 
 // ? 👇 title text gradient colors. for more colors see: `https://cssgradient.io/gradient-backgrounds`
 const coolGradient = gradient([
@@ -60,19 +61,7 @@ const arguments_shape = z
     stop: z.boolean().optional(),
 
     // accept one command at a time
-    commands: z
-      .tuple([
-        z.union([
-          z.literal('help'),
-          z.literal('emulator'),
-          z.literal('start-server'),
-          z.literal('install-apk'),
-          z.literal('launch-app'),
-          z.literal('build'),
-          z.literal('generate-fonts'),
-        ]),
-      ])
-      .optional(),
+    commands: z.tuple([unionOfLiterals(COMMANDS)]).optional(),
 
     args: z.never().optional(), // positional arguments E.g "C:\Program Files (x86)"
   })
@@ -154,6 +143,11 @@ async function app() {
   if (command === 'generate-fonts') {
     const { path } = parsedArguments.data;
     await generateAndroidFontsCommand(path);
+    return;
+  }
+  if (command === 'generate-key') {
+    const { path } = parsedArguments.data;
+    await generateAndroidKeyCommand(path);
     return;
   }
 }

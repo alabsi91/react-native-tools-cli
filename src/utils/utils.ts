@@ -3,8 +3,20 @@ import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import inquirer from 'inquirer';
 import path from 'path';
+import { z } from 'zod';
 
-import type { Commands, CommandsTuple } from '@types';
+export const COMMANDS = [
+  'emulator',
+  'start-server',
+  'install-apk',
+  'launch-app',
+  'build',
+  'generate-fonts',
+  'generate-key',
+  'help',
+] as const;
+
+export type Commands = (typeof COMMANDS)[number];
 
 export const adbCommandPath = process.env.ANDROID_HOME ? path.join(process.env.ANDROID_HOME, 'platform-tools', 'adb') : 'adb';
 
@@ -83,7 +95,6 @@ export async function askToEnterProjectRootPath() {
   return projectPath;
 }
 
-const COMMANDS: CommandsTuple = ['emulator', 'start-server', 'install-apk', 'launch-app', 'build', 'generate-fonts', 'help'];
 type Answers = { command: Commands };
 
 export async function askForCommand() {
@@ -93,8 +104,18 @@ export async function askForCommand() {
       name: 'command',
       message: 'Choose a command :',
       choices: COMMANDS,
+      pageSize: COMMANDS.length,
     },
   ]);
 
   return command;
+}
+
+export function unionOfLiterals<T extends Commands>(constants: readonly T[]) {
+  const literals = constants.map(x => z.literal(x)) as unknown as readonly [
+    z.ZodLiteral<T>,
+    z.ZodLiteral<T>,
+    ...z.ZodLiteral<T>[],
+  ];
+  return z.union(literals);
 }
