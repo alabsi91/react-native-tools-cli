@@ -25,7 +25,7 @@ async function getPackageName(cwd: string) {
 }
 
 async function runApplication(deviceName: string, packageName: string, cwd: string) {
-  await $`"${adbCommandPath}" -s ${deviceName} shell am start -n ${packageName}${{ cwd }}`;
+  await $`"${adbCommandPath}" -s ${deviceName} shell am start -n "${packageName}/.MainActivity"${{ cwd }}`;
 }
 
 export async function runAndroidAppCommand(deviceName?: string, projectPath = '') {
