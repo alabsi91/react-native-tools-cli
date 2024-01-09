@@ -1,4 +1,4 @@
-import { cmdPassThrough } from '@utils/cli-utils.js';
+import { Log, cmdPassThrough } from '@utils/cli-utils.js';
 import { askToEnterProjectRootPath, isReactNativeRootDir } from '@utils/utils.js';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
@@ -65,27 +65,27 @@ async function askForCommand() {
 }
 
 async function testTsAndEslint(cwd: string) {
-  console.log('\n', chalk.yellow('Checking for ') + chalk.cyan('`typescript` ') + chalk.yellow('errors ...'), '\n');
+  Log.info('\nChecking for', chalk.yellow('`typescript`'), 'errors ...\n');
   try {
     await cmdPassThrough`npx tsc --project ./ --noEmit${{ cwd }}`;
   } catch (error) {
     process.exit(1);
   }
 
-  console.log('\n', chalk.yellow('Checking for ') + chalk.cyan('`eslint` ') + chalk.yellow('errors ...'), '\n');
+  Log.info('\nChecking for', chalk.yellow('`eslint`'), 'errors ...\n');
   try {
     await cmdPassThrough`npx eslint src --max-warnings 0${{ cwd }}`;
   } catch (error) {
     process.exit(1);
   }
 
-  console.log(chalk.green('\n✅ Typescript and Eslint checks passed.\n'));
+  Log.success('\nTypescript and Eslint checks passed.\n');
 }
 
 export async function buildCommand(operationName?: (typeof CHOICES)[number]['name'], projectPath = '') {
   const isReactNative = await isReactNativeRootDir(projectPath);
   if (!isReactNative) {
-    console.log(chalk.red('\n⛔ This script must be run in a react-native project !!\n'));
+    Log.error('\nThis script must be run in a react-native project !!\n');
     projectPath = await askToEnterProjectRootPath();
   }
 
@@ -97,12 +97,12 @@ export async function buildCommand(operationName?: (typeof CHOICES)[number]['nam
   }
 
   // build
-  console.log(chalk.yellow('\n', operation.logMessage, '...\n'));
+  Log.info('\n', operation.logMessage, '...\n');
   try {
     await cmdPassThrough`${gradleCommandPath} ${operation.command} ${{ cwd: path.join(projectPath, 'android') }}`;
   } catch (error) {
     process.exit(1);
   }
 
-  console.log(chalk.green('\n✅ Done!\n'));
+  Log.success('\nDone!\n');
 }

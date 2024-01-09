@@ -1,4 +1,4 @@
-import { $ } from '@utils/cli-utils.js';
+import { $, Log } from '@utils/cli-utils.js';
 import {
   adbCommandPath,
   askToChooseDevice,
@@ -17,7 +17,7 @@ async function getPackageName(cwd: string) {
   const packageName = /applicationId (?<package>.*)/.exec(file)?.groups?.package;
 
   if (!packageName) {
-    console.log(chalk.red("\n⛔ Couldn't find the"), chalk.cyan('package name'), chalk.red('!!'));
+    Log.error("\nCouldn't find the", chalk.cyan('package name'), '!!\n');
     process.exit(1);
   }
 
@@ -31,13 +31,13 @@ async function runApplication(deviceName: string, packageName: string, cwd: stri
 export async function runAndroidAppCommand(deviceName?: string, projectPath = '') {
   const isReactNative = await isReactNativeRootDir(projectPath);
   if (!isReactNative) {
-    console.log(chalk.red('\n⛔ This script must be run in a react-native project !!\n'));
+    Log.error('\nThis script must be run in a react-native project !!\n');
     projectPath = await askToEnterProjectRootPath();
   }
 
   const isAdb = await isAdbCommandExists();
   if (!isAdb) {
-    console.log(chalk.red('\n⛔ [adb] is not found on your machine !!\n'));
+    Log.error('\n[adb] is not found on your machine !!\n');
     process.exit(1);
   }
 
@@ -45,20 +45,20 @@ export async function runAndroidAppCommand(deviceName?: string, projectPath = ''
   let targetDevice: string | null;
 
   if (devices.length === 0) {
-    console.log(chalk.yellow('\n⚠️ No connected devices found !!\n'));
+    Log.warn('\nNo connected devices found !!\n');
     process.exit(1);
   }
 
   if (typeof deviceName === 'string') {
     if (!devices.includes(deviceName)) {
-      console.log('\n⛔', chalk.yellow(deviceName), chalk.red('is not found !!\n'));
+      Log.error('\n⛔', chalk.yellow(deviceName), 'is not found !!\n');
       process.exit(1);
     }
 
     targetDevice = deviceName;
   } else {
     if (devices.length > 1) {
-      console.log(chalk.yellow('Found more than 1 device'));
+      Log.warn('\nFound more than 1 device\n');
       targetDevice = await askToChooseDevice(devices);
     } else {
       targetDevice = devices[0];
@@ -77,9 +77,10 @@ export async function runAndroidAppCommand(deviceName?: string, projectPath = ''
     );
     await runApplication(targetDevice, packageName, projectPath);
   } catch (error) {
-    console.log(chalk.red('\n⛔ Something went wrong !!'));
+    Log.error('\nSomething went wrong !!\n');
+    console.log(error);
     process.exit(1);
   }
 
-  console.log(chalk.green('✅ Done!\n'));
+  Log.success('\nDone!\n');
 }

@@ -1,8 +1,9 @@
-import chalk from 'chalk';
-import path from 'path';
-import fs from 'fs/promises';
-import { existsSync } from 'fs';
+import { Log } from '@utils/cli-utils.js';
 import { askToEnterProjectRootPath, isReactNativeRootDir } from '@utils/utils.js';
+import chalk from 'chalk';
+import { existsSync } from 'fs';
+import fs from 'fs/promises';
+import path from 'path';
 
 const fontWeight = {
   thin: '100',
@@ -200,7 +201,7 @@ function printCodeExample(fontsFamilies: Set<string>) {
 export async function generateAndroidFontsCommand(projectPath = '') {
   const isReactNative = await isReactNativeRootDir(projectPath);
   if (!isReactNative) {
-    console.log(chalk.red('\n⛔ This script must be run in a react-native project !!\n'));
+    Log.error('\nThis script must be run in a react-native project !!\n');
     projectPath = await askToEnterProjectRootPath();
   }
 
@@ -208,7 +209,7 @@ export async function generateAndroidFontsCommand(projectPath = '') {
 
   // get all the font files
   if (!existsSync(fontsPath)) {
-    console.log(chalk.red('\n⛔ No fonts found in'), chalk.yellow('"src/assets/fonts"'), chalk.red('. !!\n'));
+    Log.error('\nNo fonts found in', chalk.yellow('"src/assets/fonts"'), '. !!\n');
     process.exit(1);
   }
 
@@ -243,7 +244,7 @@ export async function generateAndroidFontsCommand(projectPath = '') {
     await fs.writeFile(fontXMLPath_v26, familyXML_v26);
   }
 
-  console.log(chalk.green('\n✅ Fonts generated successfully !!\n\n'));
+  Log.success('\nFonts generated successfully !!\n\n');
 
   printCodeExample(fontsFamilies);
 }

@@ -1,11 +1,10 @@
-import { $ } from '@utils/cli-utils.js';
-import chalk from 'chalk';
+import { $, Log } from '@utils/cli-utils.js';
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import inquirer from 'inquirer';
 import path from 'path';
 
-import type { CommandsTuple, Commands } from '@types';
+import type { Commands, CommandsTuple } from '@types';
 
 export const adbCommandPath = process.env.ANDROID_HOME ? path.join(process.env.ANDROID_HOME, 'platform-tools', 'adb') : 'adb';
 
@@ -77,7 +76,7 @@ export async function askToEnterProjectRootPath() {
   const isReactNative = await isReactNativeRootDir(projectPath);
 
   if (!isReactNative) {
-    console.log(chalk.red('\n⛔ This script must be run in a react-native project !!\n'));
+    Log.error('\nThis script must be run in a react-native project !!\n');
     return await askToEnterProjectRootPath();
   }
 

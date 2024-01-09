@@ -1,21 +1,17 @@
 #!/usr/bin/env node
 
-import chalk from 'chalk';
 import gradient from 'gradient-string';
 import z from 'zod';
 
-import { parseArguments } from '@cli';
-import { askForCommand } from '@utils/utils.js';
-import { emulatorCommand } from './commands/emulator.js';
-
-import { helpCommand } from '@commands/help.js';
-import { runAndroidAppCommand } from '@commands/launchAndroidApp.js';
-import { buildCommand } from './commands/build.js';
-import { installApkCommand } from './commands/installApk.js';
-import { startServerCommand } from './commands/startServer.js';
+import { Log, parseArguments } from '@cli';
 import { generateAndroidFontsCommand } from '@commands/androidFonts.js';
-
-import type { Commands } from '@types';
+import { buildCommand } from '@commands/build.js';
+import { emulatorCommand } from '@commands/emulator.js';
+import { helpCommand } from '@commands/help.js';
+import { installApkCommand } from '@commands/installApk.js';
+import { runAndroidAppCommand } from '@commands/launchAndroidApp.js';
+import { startServerCommand } from '@commands/startServer.js';
+import { askForCommand } from '@utils/utils.js';
 
 // ? 👇 title text gradient colors. for more colors see: `https://cssgradient.io/gradient-backgrounds`
 const coolGradient = gradient([
@@ -35,7 +31,7 @@ console.log(
 // 👇 your expected arguments, used for autocomplete and validation.
 const arguments_shape = z
   .object({
-    // help
+    // --help or -h
     help: z.boolean().optional(),
     h: z.boolean().optional(),
 
@@ -63,7 +59,22 @@ const arguments_shape = z
     clean: z.boolean().optional(),
     stop: z.boolean().optional(),
 
-    args: z.array(z.string()).optional(), // positional arguments E.g "C:\Program Files (x86)"
+    // accept one command at a time
+    commands: z
+      .tuple([
+        z.union([
+          z.literal('help'),
+          z.literal('emulator'),
+          z.literal('start-server'),
+          z.literal('install-apk'),
+          z.literal('launch-app'),
+          z.literal('build'),
+          z.literal('generate-fonts'),
+        ]),
+      ])
+      .optional(),
+
+    args: z.never().optional(), // positional arguments E.g "C:\Program Files (x86)"
   })
   .strict(); // throw an error on extra keys
 
@@ -73,12 +84,12 @@ async function app() {
   // when parsing arguments fails
   if (!parsedArguments.success) {
     const { issues } = parsedArguments.error;
-    console.log(chalk.red('\n' + issues.map(i => `⛔ [ ${i.path} ] : ${i.message}`).join('\n') + '\n'));
-    helpCommand();
+    Log.error('\n', issues.map(i => `[ ${i.path} ] : ${i.message}`).join('\n'), '\n');
+    // helpCommand();
     process.exit(1);
   }
 
-  const { args, help, h } = parsedArguments.data;
+  const { help, h, commands } = parsedArguments.data;
 
   // print help if passed as an option
   if (help || h) {
@@ -86,8 +97,8 @@ async function app() {
     return;
   }
 
-  const isCommandPassed = args && args.length > 0;
-  const command = isCommandPassed ? (args[0] as Commands) : await askForCommand();
+  const isCommandPassed = commands && commands.length > 0;
+  const command = isCommandPassed ? commands[0] : await askForCommand();
 
   // print help if passed as a command
   if (command === 'help') {

@@ -1,10 +1,10 @@
-import chalk from 'chalk';
+import chalk, { ColorName } from 'chalk';
 import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import { z } from 'zod';
 
 import type { ExecOptions, SpawnOptions } from 'child_process';
-import type { SafeParseReturnType, ZodType } from 'zod';
+import type { SafeParseReturnType, ZodObject, ZodRawShape } from 'zod';
 
 /**
  * - It takes the command line arguments, and returns an object with the arguments as key value pairs.
@@ -19,41 +19,62 @@ import type { SafeParseReturnType, ZodType } from 'zod';
  *   ◽ --full-name="John Doe"    a key-value pair.          ➡️  { fullName: 'John Doe' }
  *   ◽ "C:\Program Files (x86)"  a string with quotes.      ➡️  { args: [ 'C:\\Program Files (x86)' ] }
  *   ◽ C:\Users\Public           a string without spaces.   ➡️  { args: [ 'C:\\Users\\Public' ] }
+ *   ◽ start                     specified as a command.    ➡️  { commands: [ 'start' ] }
  */
-export function parseArguments<T extends ZodType>(userArgs: T) {
-  const results: z.infer<T> = Object.assign({});
+export function parseArguments<T extends ZodObject<ZodRawShape>>(userArgs: T) {
+  const results: { commands: string[]; args: string[]; [key: string]: unknown } = Object.assign({});
 
-  for (const arg of process.argv.slice(2)) {
-    const key = arg.startsWith('-')
-        ? arg
-            .replace(/^-{1,2}/, '')
-            .replace(/=.+/, '')
-            .replace(/-\w/gi, t => t.substring(1).toUpperCase())
-        : 'args', // get arg name
-      boolean = /^--.+=\bfalse\b/.test(arg) ? false : /^-\w$|^--[^=]+$/.test(arg) ? true : null,
-      number = /--.+=[-+]?(\d*\.)?\d+$/.test(arg) ? +arg.replace(/^--.+=/, '') : null,
-      string = !number && /^--.+=.+$/.test(arg) ? arg.replace(/^--.+=/, '') : null,
-      withoutFlag = !arg.startsWith('-') ? arg : null, // single string argument without a flag (e.g. 'C:\Program Files (x86)')
-      value = number ?? boolean ?? string ?? withoutFlag;
+  const toBoolean = (str: string) => (/^--.+=\bfalse\b/.test(str) ? false : /^-\w$|^--[^=]+$/.test(str) ? true : null);
+  const toNumber = (str: string) => (/--.+=[-+]?(\d*\.)?\d+$/.test(str) ? +str.replace(/^--.+=/, '') : null);
+  const toString = (str: string) => (/^--.+=.+$/.test(str) ? str.replace(/^--.+=/, '') : null);
+  const isCommand = (str: string) => !str.startsWith('-') && userArgs.shape.commands.safeParse([str]).success;
+  const isNumber = (num: unknown): num is number => typeof num === 'number' && !Number.isNaN(num) && Number.isFinite(num);
+  /** Get the key without the value E.g. `--output-text="text"` => `outputText` */
+  const parseKey = (str: string) => {
+    return str.startsWith('-')
+      ? str
+          .replace(/^-{1,2}/, '')
+          .replace(/=.+/, '')
+          .replace(/-\w/gi, t => t.substring(1).toUpperCase())
+      : null;
+  };
 
-    if (key === 'args' && withoutFlag) {
+  for (const str of process.argv.slice(2)) {
+    const key = parseKey(str),
+      boolean = toBoolean(str),
+      number = toNumber(str),
+      string = isNumber(number) ? null : toString(str),
+      command = isCommand(str) ? str : null,
+      arg = !str.startsWith('-') ? str : null,
+      value = number ?? boolean ?? string ?? command ?? arg;
+
+    if (key === null && arg && !command) {
       // add to args array if exists
-      if (Array.isArray(results[key])) {
-        const args = results[key] as string[];
-        args.push(withoutFlag);
+      if (Array.isArray(results.args)) {
+        results.args.push(arg);
         continue;
       }
       // create args entry as array if it doesn't exist
-      results[key] = [withoutFlag];
+      results.args = [arg];
       continue;
     }
 
-    if (value !== null) results[key] = value;
+    if (key === null && command) {
+      // add to commands array if exists
+      if (Array.isArray(results.commands)) {
+        const commands = results.commands;
+        commands.push(command);
+        continue;
+      }
+      // create commands entry as array if it doesn't exist
+      results.commands = [command];
+      continue;
+    }
+
+    if (value !== null && key) results[key] = value;
   }
 
-  const data: SafeParseReturnType<T, z.infer<T>> = userArgs.safeParse(results);
-
-  return data;
+  return userArgs.safeParse(results) as SafeParseReturnType<T, z.infer<T>>;
 }
 
 // ? 💁 See `https://github.com/sindresorhus/cli-spinners/blob/main/spinners.json` for more spinners.
@@ -129,14 +150,12 @@ export function progress(message: string, autoStopTimer = 0) {
     /** ✅ stop with a success styled message. */
     success: function (endMessage: string) {
       stop();
-      const successMessage = chalk.green(`✅ ${endMessage}`); // ✅ success message if isError is false
-      process.stdout.write(`${successMessage}\n\n`); // 🖨️ print end message to the console.
+      Log.success(endMessage, '\n\n'); // 🖨️ print end message to the console.
     },
     /** ⛔ stop with an error styled message. */
     error: function (endMessage: string) {
       stop();
-      const errorMessage = chalk.red(`⛔ ${endMessage}`); // ⛔ error message if isError is true
-      process.stdout.write(`${errorMessage}\n\n`); // 🖨️ print end message to the console.
+      Log.error(endMessage, '\n\n'); // 🖨️ print end message to the console.
     },
     /** Stop with a none styled message. */
     log: function (logMessage: string) {
@@ -206,3 +225,50 @@ export function cleanTerminalColors(inputString: string) {
   const cleanedString = inputString.replace(colorRegex, '');
   return cleanedString;
 }
+
+const formatLogTitle = (title: string, color: ColorName) => {
+  title = ' '.repeat(3) + title.padEnd(10);
+  return chalk[color]('|') + chalk[color].bold.inverse(title) + chalk[color]('|');
+};
+function getNewlines(messages: string[]) {
+  const message = messages.join('');
+  const newlineRegex = /^(\s*[\n\r]+)/;
+  const match = message.match(newlineRegex);
+
+  if (match) {
+    const newlines = match[0];
+    const afterNewline = message.substring(match[0].length);
+    return { newlines, afterNewline };
+  }
+
+  return { newlines: '', afterNewline: message };
+}
+
+/**
+ * - Prints a styled message to the console.
+ *
+ * @example
+ *   Log('Hello World!'); // Prints: | LOG | Hello World! |
+ *   Log.info('Hello World!'); // Prints: | INFO | Hello World! |
+ *   Log.error('Hello World!'); // Prints: | ERROR | Hello World! |
+ *   Log.warn('Hello World!'); // Prints: | WARNING | Hello World! |
+ */
+export function Log(...messages: unknown[]) {
+  console.log(formatLogTitle('LOG', 'white'), ...messages);
+}
+Log.warn = (...messages: string[]) => {
+  const { newlines, afterNewline } = getNewlines(messages);
+  console.log(newlines, formatLogTitle('WARNING', 'yellow'), chalk.bold.yellow(afterNewline));
+};
+Log.success = (...messages: string[]) => {
+  const { newlines, afterNewline } = getNewlines(messages);
+  console.log(newlines, formatLogTitle('SUCCESS', 'green'), chalk.bold.green(afterNewline));
+};
+Log.error = (...messages: string[]) => {
+  const { newlines, afterNewline } = getNewlines(messages);
+  console.log(newlines, formatLogTitle('ERROR', 'red'), chalk.bold.red(afterNewline));
+};
+Log.info = (...messages: string[]) => {
+  const { newlines, afterNewline } = getNewlines(messages);
+  console.log(newlines, formatLogTitle('INFO', 'blue'), chalk.bold.blue(afterNewline));
+};

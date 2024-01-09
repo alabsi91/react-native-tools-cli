@@ -1,4 +1,4 @@
-import { $ } from '@utils/cli-utils.js';
+import { $, Log } from '@utils/cli-utils.js';
 import { askToChooseDevice } from '@utils/utils.js';
 import chalk from 'chalk';
 import { spawn } from 'child_process';
@@ -27,13 +27,18 @@ async function getListOfEmulators() {
 
 function runAnEmulator(emulatorName: string) {
   /* Spawning a new process. */
-  spawn(emulatorCommandPath, ['-avd', emulatorName], { detached: false, stdio: 'ignore', windowsHide: true, timeout: 10000 }).unref();
+  spawn(emulatorCommandPath, ['-avd', emulatorName], {
+    detached: false,
+    stdio: 'ignore',
+    windowsHide: true,
+    timeout: 10000,
+  }).unref();
 }
 
 export async function emulatorCommand(emulatorName?: string) {
   const isEmulator = await isEmulatorCommandExists();
   if (!isEmulator) {
-    console.log(chalk.red('\n⛔ [emulator] is not found on your machine !!\n'));
+    Log.error('\n[emulator] command is not found on your machine !!');
     process.exit(1);
   }
 
@@ -42,7 +47,7 @@ export async function emulatorCommand(emulatorName?: string) {
   // if emulatorName is provided
   if (typeof emulatorName === 'string') {
     if (!devices.includes(emulatorName)) {
-      console.log('\n⛔', chalk.yellow(emulatorName), chalk.red('is not found !!\n'));
+      Log.error('\n', chalk.yellow(emulatorName), 'is not found !!\n');
       process.exit(1);
     }
 
@@ -53,18 +58,18 @@ export async function emulatorCommand(emulatorName?: string) {
   let targetEmulator: string;
 
   if (devices.length === 0) {
-    console.log(chalk.red('\n⛔ No emulators devices found !!\n'));
+    Log.error('\nNo emulator devices found !!\n');
     process.exit(1);
   }
 
   if (devices.length > 1) {
-    console.log(chalk.yellow('Found more than 1 device'));
+    Log.warn('\nFound more than 1 device\n');
     targetEmulator = await askToChooseDevice(devices);
   }
 
   targetEmulator = devices[0];
 
-  console.log(chalk.yellow('\n🚀 Opening'), chalk.cyan(targetEmulator), chalk.yellow('emulator ...\n'));
+  Log.info('\n🚀 Opening', chalk.yellow(targetEmulator), 'emulator ...\n');
 
   runAnEmulator(targetEmulator);
 }
