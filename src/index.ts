@@ -3,6 +3,9 @@
 import gradient from 'gradient-string';
 import z from 'zod';
 
+import { createCommandSchema } from '@cli/commandSchema/commandSchema.js';
+import { parse } from '@cli/commandSchema/parseSchema.js';
+import { Log } from '@cli/logger.js';
 import { generateAndroidFontsCommand } from '@commands/androidFonts.js';
 import { buildCommand } from '@commands/build.js';
 import { emulatorCommand } from '@commands/emulator.js';
@@ -10,8 +13,6 @@ import { generateAndroidKeyCommand } from '@commands/generateAndroidKey.js';
 import { installApkCommand } from '@commands/installApk.js';
 import { runAndroidAppCommand } from '@commands/launchAndroidApp.js';
 import { startServerCommand } from '@commands/startServer.js';
-import { parse } from './cli-tools/commandSchema/parseSchema.js';
-import { Log } from './cli-tools/logger.js';
 import { askForCommand } from './utils/utils.js';
 
 // ? 👇 title text gradient colors. for more colors see: `https://cssgradient.io/gradient-backgrounds`
@@ -30,6 +31,8 @@ console.log(
 );
 
 async function app() {
+  const helpSchema = createCommandSchema({ command: 'help', description: 'Print this help message.' });
+
   const parsedArguments = parse(
     emulatorCommand.schema,
     startServerCommand.schema,
@@ -38,6 +41,7 @@ async function app() {
     buildCommand.schema,
     generateAndroidFontsCommand.schema,
     generateAndroidKeyCommand.schema,
+    helpSchema,
     {
       description: 'React Native CLI Tools',
       globalOptions: [
@@ -45,6 +49,11 @@ async function app() {
           name: 'help',
           type: z.boolean().optional().describe('Print this help message.'),
           aliases: ['h'],
+        },
+        {
+          name: 'version',
+          type: z.boolean().optional().describe('Print the CLI version.'),
+          aliases: ['v'],
         },
       ],
     },
@@ -60,9 +69,22 @@ async function app() {
   const data = parsedArguments.data;
 
   if (!data.command) {
-    const { help } = data;
-    if (help) parse.printHelp();
+    const { help, version } = data;
+    if (help) {
+      parse.printHelp();
+      return;
+    }
+
+    if(version) {
+      Log.info("\nReact Native CLI Tools v1.0.0\n");
+      return;
+    }
+
     data.command = (await askForCommand()) as keyof typeof data.command;
+  }
+
+  if (data.command === 'help') {
+    parse.printHelp();
   }
 
   if (data.command === 'emulator') {
