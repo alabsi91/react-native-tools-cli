@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import { name as packageName } from '../../../package.json';
 import { NO_COMMAND } from './parseSchema.js';
 
 import type { AllowedOptionTypes, CommandSchema } from './types.js';
@@ -38,7 +37,7 @@ export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: st
   };
 
   return {
-    name: cliName ?? packageName,
+    name: cliName ?? 'node-cli',
     description: cliDescription,
     usage,
     globalOptions: schema

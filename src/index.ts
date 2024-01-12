@@ -24,7 +24,7 @@ console.log(
 async function app() {
   // add all commands schema here 👇
   const parsedArguments = parse(testCommand.schema, {
-    cliName: 'node-cli', // The CLI name that starts your CLI, used for help command. defaults to package.json name
+    cliName: 'node-cli', // The CLI name that starts your CLI, used for help command.
     description: 'A CLI for testing.', // For help command
     validateSchema: true, // Throw an error if the schema is invalid. recommended to set to false in production.
     // global options are used when no command is specified, for example: `node-cli --help`

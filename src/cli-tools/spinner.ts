@@ -1,4 +1,4 @@
-import { sleep } from '@/cli-tools/terminal.js';
+import { sleep } from '@cli/terminal.js';
 import chalk from "chalk";
 import { Log } from './logger.js';
 

@@ -18,7 +18,7 @@
     "removeComments": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "resolveJsonModule": true
+    // "resolveJsonModule": true
   },
   "include": ["src"],
   "exclude": ["node_modules"]
