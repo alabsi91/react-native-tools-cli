@@ -2,9 +2,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@/*": ["src/*"],
       "@commands/*": ["src/commands/*"],
       "@utils/*": ["src/utils/*"],
-      "@cli": ["src/utils/cli-utils.js"],
+      "@cli/*": ["src/cli-tools/*"],
       "@types": ["src/types.js"]
     },
     "module": "Node16",
