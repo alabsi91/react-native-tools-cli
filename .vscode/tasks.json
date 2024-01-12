@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "typescript",
+      "tsconfig": "tsconfig.json",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "build & resolve-paths",
+      "type": "shell",
+      "dependsOn": ["build"],
+      "command": "npx resolve-tspaths",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

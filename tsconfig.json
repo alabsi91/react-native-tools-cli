@@ -2,10 +2,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@commands/*" : ["src/commands/*"],
-      "@utils/*" : ["src/utils/*"],
-      "@cli" : ["src/utils/cli-utils.js"],
-      "@types" : ["src/types.js"]
+      "@commands/*": ["src/commands/*"],
+      "@utils/*": ["src/utils/*"],
+      "@cli": ["src/utils/cli-utils.js"],
+      "@types": ["src/types.js"]
     },
     "module": "Node16",
     "target": "ESNext",
@@ -16,7 +16,8 @@
     "forceConsistentCasingInFileNames": true,
     "removeComments": true,
     "skipLibCheck": true,
-    // "resolveJsonModule": true,
+    "sourceMap": true,
+    "resolveJsonModule": true
   },
   "include": ["src"],
   "exclude": ["node_modules"]
