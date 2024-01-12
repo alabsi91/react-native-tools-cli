@@ -1,8 +1,11 @@
-import { Log, cmdPassThrough } from '@utils/cli-utils.js';
+import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
+import { cmdPassThrough } from '@/cli-tools/terminal.js';
+import { Log } from '@/cli-tools/logger.js';
 import { askToEnterProjectRootPath, isReactNativeRootDir } from '@utils/utils.js';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import path from 'path';
+import { z } from 'zod';
 
 const gradleCommandPath = process.platform.startsWith('win') ? 'gradlew.bat' : './gradlew';
 
@@ -106,3 +109,38 @@ export async function buildCommand(operationName?: (typeof CHOICES)[number]['nam
 
   Log.success('\nDone!\n');
 }
+
+buildCommand.schema = createCommandSchema({
+  command: 'build',
+  description: 'Build the React Native Android project',
+  options: [
+    {
+      name: 'path',
+      type: z.string().optional().describe('Specify the React Native root project path.'),
+    },
+    {
+      name: 'apkDebug',
+      type: z.boolean().optional().describe('Build the debug APK variant.'),
+    },
+    {
+      name: 'apkRelease',
+      type: z.boolean().optional().describe('Build the release APK variant.'),
+    },
+    {
+      name: 'bundleDebug',
+      type: z.boolean().optional().describe('Build the debug AAB variant.'),
+    },
+    {
+      name: 'bundleRelease',
+      type: z.boolean().optional().describe('Build the release AAB variant.'),
+    },
+    {
+      name: 'clean',
+      type: z.boolean().optional().describe('Clean the build cache.'),
+    },
+    {
+      name: 'stop',
+      type: z.boolean().optional().describe('Stop the Gradle daemons.'),
+    },
+  ],
+});

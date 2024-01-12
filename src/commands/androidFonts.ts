@@ -1,9 +1,11 @@
-import { Log } from '@utils/cli-utils.js';
+import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
+import { Log } from '@/cli-tools/logger.js';
 import { askToEnterProjectRootPath, isReactNativeRootDir } from '@utils/utils.js';
 import chalk from 'chalk';
 import { existsSync } from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
+import { z } from 'zod';
 
 const fontWeight = {
   thin: '100',
@@ -248,3 +250,14 @@ export async function generateAndroidFontsCommand(projectPath = '') {
 
   printCodeExample(fontsFamilies);
 }
+
+generateAndroidFontsCommand.schema = createCommandSchema({
+  command: 'generate-fonts',
+  description: 'Setup fonts on Android using ./src/assets/fonts/',
+  options: [
+    {
+      name: 'path',
+      type: z.string().optional().describe('Specify the React Native root project path.'),
+    },
+  ],
+});

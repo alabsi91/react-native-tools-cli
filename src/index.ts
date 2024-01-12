@@ -3,16 +3,16 @@
 import gradient from 'gradient-string';
 import z from 'zod';
 
-import { Log, parseArguments } from '@cli';
 import { generateAndroidFontsCommand } from '@commands/androidFonts.js';
 import { buildCommand } from '@commands/build.js';
 import { emulatorCommand } from '@commands/emulator.js';
 import { generateAndroidKeyCommand } from '@commands/generateAndroidKey.js';
-import { helpCommand } from '@commands/help.js';
 import { installApkCommand } from '@commands/installApk.js';
 import { runAndroidAppCommand } from '@commands/launchAndroidApp.js';
 import { startServerCommand } from '@commands/startServer.js';
-import { COMMANDS, askForCommand, unionOfLiterals } from '@utils/utils.js';
+import { parse } from './cli-tools/commandSchema/parseSchema.js';
+import { Log } from './cli-tools/logger.js';
+import { askForCommand } from './utils/utils.js';
 
 // ? 👇 title text gradient colors. for more colors see: `https://cssgradient.io/gradient-backgrounds`
 const coolGradient = gradient([
@@ -29,99 +29,69 @@ console.log(
   ),
 );
 
-// 👇 your expected arguments, used for autocomplete and validation.
-const arguments_shape = z
-  .object({
-    // --help or -h
-    help: z.boolean().optional(),
-    h: z.boolean().optional(),
-
-    // --device="string string"
-    device: z.string().optional(),
-    // --path="path/to/dir" react native root project path
-    path: z.string().optional(),
-
-    // clear cache
-    clear: z.boolean().optional(),
-    c: z.boolean().optional(),
-
-    // debug
-    debug: z.boolean().optional(),
-    d: z.boolean().optional(),
-
-    // release
-    release: z.boolean().optional(),
-    r: z.boolean().optional(),
-
-    apkDebug: z.boolean().optional(),
-    apkRelease: z.boolean().optional(),
-    bundleDebug: z.boolean().optional(),
-    bundleRelease: z.boolean().optional(),
-    clean: z.boolean().optional(),
-    stop: z.boolean().optional(),
-
-    // accept one command at a time
-    commands: z.tuple([unionOfLiterals(COMMANDS)]).optional(),
-
-    args: z.never().optional(), // positional arguments E.g "C:\Program Files (x86)"
-  })
-  .strict(); // throw an error on extra keys
-
 async function app() {
-  const parsedArguments = parseArguments(arguments_shape);
+  const parsedArguments = parse(
+    emulatorCommand.schema,
+    startServerCommand.schema,
+    installApkCommand.schema,
+    runAndroidAppCommand.schema,
+    buildCommand.schema,
+    generateAndroidFontsCommand.schema,
+    generateAndroidKeyCommand.schema,
+    {
+      description: 'React Native CLI Tools',
+      globalOptions: [
+        {
+          name: 'help',
+          type: z.boolean().optional().describe('Print this help message.'),
+          aliases: ['h'],
+        },
+      ],
+    },
+  );
 
   // when parsing arguments fails
   if (!parsedArguments.success) {
     const { issues } = parsedArguments.error;
     Log.error('\n', issues.map(i => `[ ${i.path} ] : ${i.message}`).join('\n'), '\n');
-    // helpCommand();
     process.exit(1);
   }
 
-  const { help, h, commands } = parsedArguments.data;
+  const data = parsedArguments.data;
 
-  // print help if passed as an option
-  if (help || h) {
-    helpCommand();
-    return;
+  if (!data.command) {
+    const { help } = data;
+    if (help) parse.printHelp();
+    data.command = (await askForCommand()) as keyof typeof data.command;
   }
 
-  const isCommandPassed = commands && commands.length > 0;
-  const command = isCommandPassed ? commands[0] : await askForCommand();
-
-  // print help if passed as a command
-  if (command === 'help') {
-    helpCommand();
-    return;
-  }
-
-  if (command === 'emulator') {
-    const { device } = parsedArguments.data;
+  if (data.command === 'emulator') {
+    const { device } = data;
     await emulatorCommand(device);
     return;
   }
 
-  if (command === 'start-server') {
-    const { device, clear, c, path } = parsedArguments.data;
-    await startServerCommand(device, clear || c, path);
+  if (data.command === 'start-server') {
+    const { device, clear, path } = data;
+    await startServerCommand(device, clear, path);
     return;
   }
 
-  if (command === 'install-apk') {
-    const { device, debug, d, release, r, path } = parsedArguments.data;
-    const variant = debug || d ? 'debug' : release || r ? 'release' : undefined;
+  if (data.command === 'install-apk') {
+    const { device, debug, release, path } = data;
+    const variant = debug ? 'debug' : release ? 'release' : undefined;
     await installApkCommand(device, variant, path);
     return;
   }
 
-  if (command === 'launch-app') {
-    const { device, path } = parsedArguments.data;
+  if (data.command === 'launch-app') {
+    const { device, path } = data;
     await runAndroidAppCommand(device, path);
     return;
   }
 
-  if (command === 'build') {
-    const { apkDebug, apkRelease, bundleDebug, bundleRelease, clean, stop, path } = parsedArguments.data;
+  if (data.command === 'build') {
+    const { apkDebug, apkRelease, bundleDebug, bundleRelease, clean, stop, path } = data;
     const operation = apkRelease
       ? 'apkRelease'
       : apkDebug
@@ -140,13 +110,14 @@ async function app() {
     return;
   }
 
-  if (command === 'generate-fonts') {
-    const { path } = parsedArguments.data;
+  if (data.command === 'generate-fonts') {
+    const { path } = data;
     await generateAndroidFontsCommand(path);
     return;
   }
-  if (command === 'generate-key') {
-    const { path } = parsedArguments.data;
+
+  if (data.command === 'generate-key') {
+    const { path } = data;
     await generateAndroidKeyCommand(path);
     return;
   }

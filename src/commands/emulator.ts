@@ -1,8 +1,11 @@
-import { $, Log } from '@utils/cli-utils.js';
+import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
+import { $ } from '@/cli-tools/terminal.js';
+import { Log } from '@/cli-tools/logger.js';
 import { askToChooseDevice } from '@utils/utils.js';
 import chalk from 'chalk';
 import { spawn } from 'child_process';
 import path from 'path';
+import { z } from 'zod';
 
 const emulatorCommandPath = process.env.ANDROID_HOME ? path.join(process.env.ANDROID_HOME, 'emulator', 'emulator') : 'emulator';
 
@@ -73,3 +76,14 @@ export async function emulatorCommand(emulatorName?: string) {
 
   runAnEmulator(targetEmulator);
 }
+
+emulatorCommand.schema = createCommandSchema({
+  command: 'emulator',
+  description: 'Launch an emulator',
+  options: [
+    {
+      name: 'device',
+      type: z.string().optional().describe('Specify a device to connect to before starting the serve.'),
+    },
+  ],
+});

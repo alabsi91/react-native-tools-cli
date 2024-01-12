@@ -1,4 +1,6 @@
-import { Log, progress } from '@utils/cli-utils.js';
+import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
+import { spinner } from '@/cli-tools/spinner.js';
+import { Log } from '@/cli-tools/logger.js';
 import {
   adbInstallApk,
   askToChooseDevice,
@@ -12,6 +14,7 @@ import chalk from 'chalk';
 import { existsSync } from 'fs';
 import inquirer from 'inquirer';
 import path from 'path';
+import { z } from 'zod';
 
 async function askToChooseVariant() {
   const { variant } = await inquirer.prompt<{ variant: 'debug' | 'release' }>([
@@ -86,7 +89,7 @@ export async function installApkCommand(deviceName?: string, variant?: 'debug' |
     process.exit(1);
   }
 
-  const loading = progress(
+  const loading = spinner(
     chalk.yellow('⬇️ Installing the ') +
       chalk.cyan(variantName) +
       chalk.yellow(' variant on your device ') +
@@ -104,3 +107,28 @@ export async function installApkCommand(deviceName?: string, variant?: 'debug' |
 
   loading.success('APK installed successfully');
 }
+
+installApkCommand.schema = createCommandSchema({
+  command: 'install-apk',
+  description: 'Install the built APK on the connected device.',
+  options: [
+    {
+      name: 'device',
+      type: z.string().optional().describe('Specify a device to install the APK on.'),
+    },
+    {
+      name: 'path',
+      type: z.string().optional().describe('Specify the React Native root project path.'),
+    },
+    {
+      name: 'debug',
+      type: z.boolean().optional().describe('Install the debug variant.'),
+      aliases: ['d'],
+    },
+    {
+      name: 'release',
+      type: z.boolean().optional().describe('Install the release variant.'),
+      aliases: ['r'],
+    }
+  ],
+});

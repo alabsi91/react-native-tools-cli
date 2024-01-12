@@ -1,4 +1,6 @@
-import { $, Log } from '@utils/cli-utils.js';
+import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
+import { $ } from '@/cli-tools/terminal.js';
+import { Log } from '@/cli-tools/logger.js';
 import {
   adbCommandPath,
   askToChooseDevice,
@@ -10,6 +12,7 @@ import {
 import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
+import { z } from 'zod';
 
 async function getPackageName(cwd: string) {
   const buildGradlePath = path.join(cwd, 'android', 'app', 'build.gradle');
@@ -84,3 +87,18 @@ export async function runAndroidAppCommand(deviceName?: string, projectPath = ''
 
   Log.success('\nDone!\n');
 }
+
+runAndroidAppCommand.schema = createCommandSchema({
+  command: 'launch-app',
+  description: 'Launch the app on the connected device.',
+  options: [
+    {
+      name: 'device',
+      type: z.string().optional().describe('Specify a device to launch the app on.'),
+    },
+    {
+      name: 'path',
+      type: z.string().optional().describe('Specify the React Native root project path.'),
+    },
+  ],
+});

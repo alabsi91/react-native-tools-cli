@@ -1,4 +1,7 @@
-import { $, Log, progress, sleep } from '@utils/cli-utils.js';
+import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
+import { $, sleep } from '@/cli-tools/terminal.js';
+import { spinner } from '@/cli-tools/spinner.js';
+import { Log } from '@/cli-tools/logger.js';
 import {
   askToChooseDevice,
   askToEnterProjectRootPath,
@@ -8,6 +11,7 @@ import {
   reverseTCP,
 } from '@utils/utils.js';
 import chalk from 'chalk';
+import { z } from 'zod';
 
 const newTerminal = process.platform.startsWith('win') ? 'start ' : '';
 
@@ -56,10 +60,30 @@ export async function startServerCommand(deviceName?: string, resetCache = false
     await reverseTCP(targetDevice);
   }
 
-  const loading = progress('Starting server...');
+  const loading = spinner('Starting server...');
   await start(resetCache, projectPath);
   await sleep(2000);
 
   loading.success('Server started');
   process.exit(0);
 }
+
+startServerCommand.schema = createCommandSchema({
+  command: 'start-server',
+  description: 'Configure TCP and start JavaScript server.',
+  options: [
+    {
+      name: 'device',
+      type: z.string().optional().describe('Specify a device to connect to before starting the server.'),
+    },
+    {
+      name: 'path',
+      type: z.string().optional().describe('Specify the React Native root project path.'),
+    },
+    {
+      name: 'clear',
+      type: z.boolean().optional().describe('Clear the cache before starting the server.'),
+      alias: ['reset-cache', 'c'],
+    },
+  ],
+});

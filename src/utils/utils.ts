@@ -1,9 +1,9 @@
-import { $, Log } from '@utils/cli-utils.js';
+import { Log } from '@/cli-tools/logger.js';
+import { $ } from '@/cli-tools/terminal.js';
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import inquirer from 'inquirer';
 import path from 'path';
-import { z } from 'zod';
 
 export const COMMANDS = [
   'emulator',
@@ -109,13 +109,4 @@ export async function askForCommand() {
   ]);
 
   return command;
-}
-
-export function unionOfLiterals<T extends Commands>(constants: readonly T[]) {
-  const literals = constants.map(x => z.literal(x)) as unknown as readonly [
-    z.ZodLiteral<T>,
-    z.ZodLiteral<T>,
-    ...z.ZodLiteral<T>[],
-  ];
-  return z.union(literals);
 }
