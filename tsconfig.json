@@ -2,11 +2,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@schema": ["src/cli-tools/commandSchema/index.ts"],
       "@commands/*": ["src/commands/*"],
       "@utils/*": ["src/utils/*"],
       "@cli/*": ["src/cli-tools/*"],
-      "@types": ["src/types.js"]
+      "@/*": ["src/*"]
     },
     "module": "Node16",
     "target": "ESNext",

@@ -1,7 +1,10 @@
 import { schemaIntoZodUnion } from './commandSchema.js';
-import { commandsSchemaToHelpSchema, printHelp } from './helpSchema.js';
+import { commandsSchemaToHelpSchema, printHelpFromSchema } from './helpSchema.js';
 import { validateDevInput } from './validate.js';
 
+import { CONSTANTS } from '@cli/terminal.js';
+import { z } from 'zod';
+import { Log } from '../logger.js';
 import type { AllowedOptionTypes, CommandOptions, CommandSchema, ParseOptions, ParseReturnType } from './types.js';
 
 export const NO_COMMAND = 'noCommandIsProvided';
@@ -13,9 +16,6 @@ function parseArguments(schema: CommandSchema[]) {
   const isCommand = (str: string) => schema.some(command => command.command === str);
   const isCommandAlias = (str: string) => schema.some(command => command.aliases && command.aliases.includes(str));
   const commandAliasToCommand = (alias: string) => schema.filter(s => s.aliases && s.aliases.includes(alias))[0].command;
-
-  const isOptions = (str: string) =>
-    schema.some(command => command.options && command.options.some(option => option.name === str));
 
   const isOptionAlias = (str: string) =>
     schema.some(command => command.options && command.options.some(option => option.aliases && option.aliases.includes(str)));
@@ -57,18 +57,15 @@ function parseArguments(schema: CommandSchema[]) {
     if (key !== null) {
       if (value === null) continue;
 
-      if (isOptions(key)) {
-        results[key] = value;
-        syntax.push('option');
-        continue;
-      }
-
       if (isOptionAlias(key)) {
         const option = optionAliasToOption(key);
         if (option) results[option] = value;
         syntax.push('option');
         continue;
       }
+
+      results[key] = value;
+      syntax.push('option');
 
       continue;
     }
@@ -92,6 +89,10 @@ function parseArguments(schema: CommandSchema[]) {
   return { results, syntax };
 }
 
+export let printHelp = () => {
+  Log.warn('Help is not implemented yet');
+};
+
 export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<T>;
 export function parse<
   T extends CommandSchema[],
@@ -112,16 +113,43 @@ export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<
   }
 
   // validate schema and throw error if it fails
-  if (options.validateSchema !== false) validateDevInput(commands);
+  if (options.validateSchema ?? CONSTANTS.isDev) validateDevInput(commands);
 
   const zodUnion = schemaIntoZodUnion(commands);
-  const { results } = parseArguments(commands);
+  const { results, syntax } = parseArguments(commands);
 
   const HelpSchema = commandsSchemaToHelpSchema(commands, options.cliName, options.description, options.usage);
-  parse.printHelp = () => printHelp(HelpSchema);
+  printHelp = () => printHelpFromSchema(HelpSchema);
 
-  // todo: check if the syntax is valid
-  return zodUnion.safeParse(results);
+  const refined = zodUnion.superRefine((_, ctx) => {
+    // The first argument is not a command
+    if (syntax.includes('command') && syntax[0] !== 'command') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Syntax Error: Command must be the first argument. Move the command before other arguments.',
+        fatal: true,
+      });
+      return z.NEVER;
+    }
+
+    // Has more than one command
+    if (syntax.filter(t => t === 'command').length > 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Syntax Error: Only one command is allowed. Remove extra commands.',
+        fatal: true,
+      });
+      return z.NEVER;
+    }
+  });
+
+  return refined.safeParse(results);
 }
 
-parse.printHelp = () => {};
+export function createParseOptions<
+  NAME extends string,
+  TYPE extends AllowedOptionTypes,
+  OPTIONS_ARRAY extends CommandOptions<NAME, TYPE>,
+>(options: ParseOptions<OPTIONS_ARRAY>) {
+  return options;
+}

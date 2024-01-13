@@ -1,6 +1,6 @@
-import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
-import { $ } from '@/cli-tools/terminal.js';
 import { Log } from '@/cli-tools/logger.js';
+import { $ } from '@/cli-tools/terminal.js';
+import Schema from '@schema';
 import {
   adbCommandPath,
   askToChooseDevice,
@@ -14,7 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
 
-async function getPackageName(cwd: string) {
+function getPackageName(cwd: string) {
   const buildGradlePath = path.join(cwd, 'android', 'app', 'build.gradle');
   const file = fs.readFileSync(buildGradlePath, { encoding: 'utf-8' });
   const packageName = /applicationId (?<package>.*)/.exec(file)?.groups?.package;
@@ -88,7 +88,7 @@ export async function runAndroidAppCommand(deviceName?: string, projectPath = ''
   Log.success('\nDone!\n');
 }
 
-runAndroidAppCommand.schema = createCommandSchema({
+runAndroidAppCommand.schema = Schema.createCommand({
   command: 'launch-app',
   description: 'Launch the app on the connected device.',
   options: [

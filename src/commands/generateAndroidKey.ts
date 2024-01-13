@@ -1,6 +1,6 @@
-import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
-import { $ } from '@/cli-tools/terminal.js';
 import { Log } from '@/cli-tools/logger.js';
+import { $ } from '@/cli-tools/terminal.js';
+import Schema from '@schema';
 import { askToEnterProjectRootPath, isReactNativeRootDir } from '@utils/utils.js';
 import chalk from 'chalk';
 import { existsSync } from 'fs';
@@ -216,14 +216,13 @@ export async function generateAndroidKeyCommand(projectPath = '') {
   }
 }
 
-generateAndroidKeyCommand.schema = createCommandSchema({
+generateAndroidKeyCommand.schema = Schema.createCommand({
   command: 'generate-key',
   description: 'Generate android signing key and add it to build.gradle',
   options: [
     {
       name: 'path',
       type: z.string().optional().describe(' Specify the React Native root project path.'),
-      
     },
   ],
 });

@@ -1,7 +1,7 @@
-import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
-import { $, sleep } from '@/cli-tools/terminal.js';
-import { spinner } from '@/cli-tools/spinner.js';
 import { Log } from '@/cli-tools/logger.js';
+import { spinner } from '@/cli-tools/spinner.js';
+import { $, sleep } from '@/cli-tools/terminal.js';
+import Schema from '@schema';
 import {
   askToChooseDevice,
   askToEnterProjectRootPath,
@@ -15,7 +15,7 @@ import { z } from 'zod';
 
 const newTerminal = process.platform.startsWith('win') ? 'start ' : '';
 
-async function start(resetCache: boolean, cwd: string) {
+function start(resetCache: boolean, cwd: string) {
   $`${newTerminal} npx react-native start ${resetCache ? '--reset-cache' : ''}${{ cwd }}`;
 }
 
@@ -68,7 +68,7 @@ export async function startServerCommand(deviceName?: string, resetCache = false
   process.exit(0);
 }
 
-startServerCommand.schema = createCommandSchema({
+startServerCommand.schema = Schema.createCommand({
   command: 'start-server',
   description: 'Configure TCP and start JavaScript server.',
   options: [

@@ -3,8 +3,6 @@
 import gradient from 'gradient-string';
 import z from 'zod';
 
-import { createCommandSchema } from '@cli/commandSchema/commandSchema.js';
-import { parse } from '@cli/commandSchema/parseSchema.js';
 import { Log } from '@cli/logger.js';
 import { generateAndroidFontsCommand } from '@commands/androidFonts.js';
 import { buildCommand } from '@commands/build.js';
@@ -13,7 +11,9 @@ import { generateAndroidKeyCommand } from '@commands/generateAndroidKey.js';
 import { installApkCommand } from '@commands/installApk.js';
 import { runAndroidAppCommand } from '@commands/launchAndroidApp.js';
 import { startServerCommand } from '@commands/startServer.js';
-import { askForCommand } from './utils/utils.js';
+import Schema from '@schema';
+import { askForCommand } from '@utils/utils.js';
+import { CONSTANTS, testCliArgsInput } from '@cli/terminal.js';
 
 // ? 👇 title text gradient colors. for more colors see: `https://cssgradient.io/gradient-backgrounds`
 const coolGradient = gradient([
@@ -26,14 +26,43 @@ const coolGradient = gradient([
 // ? `https://codebeautify.org/javascript-escape-unescape` 👈 escape your title's string for JavaScript.
 console.log(
   coolGradient(
-    ' _____                 _   _   _       _   _           _______          _     \n|  __ \\               | | | \\ | |     | | (_)         |__   __|        | |    \n| |__) |___  __ _  ___| |_|  \\| | __ _| |_ ___   _____   | | ___   ___ | |___ \n|  _  // _ \\/ _` |/ __| __| . ` |/ _` | __| \\ \\ / / _ \\  | |/ _ \\ / _ \\| / __|\n| | \\ |  __| (_| | (__| |_| |\\  | (_| | |_| |\\ V |  __/  | | (_) | (_) | \\__ \\\n|_|  \\_\\___|\\__,_|\\___|\\__|_| \\_|\\__,_|\\__|_| \\_/ \\___|  |_|\\___/ \\___/|_|___/\n',
+    String.raw`
+ _____                 _     _   _       _   _             _______          _     
+|  __ \               | |   | \ | |     | | (_)           |__   __|        | |    
+| |__) |___  __ _  ___| |_  |  \| | __ _| |_ ___   _____     | | ___   ___ | |___ 
+|  _  // _ \/ _  |/ __| __| | .   |/ _  | __| \ \ / / _ \    | |/ _ \ / _ \| / __|
+| | \ \  __/ (_| | (__| |_  | |\  | (_| | |_| |\ V /  __/    | | (_) | (_) | \__ \
+|_|  \_\___|\__,_|\___|\__| |_| \_|\__,_|\__|_| \_/ \___|    |_|\___/ \___/|_|___/
+`,
   ),
 );
 
-async function app() {
-  const helpSchema = createCommandSchema({ command: 'help', description: 'Print this help message.' });
+// ⚠️ For testing in development mode only
+if (CONSTANTS.isDev) {
+  // Here you can test your CLI arguments while using hot reload in development mode.
+  testCliArgsInput('');
+}
 
-  const parsedArguments = parse(
+async function app() {
+  const helpSchema = Schema.createCommand({ command: 'help', description: 'Print this help message.' });
+
+  const parseOptions = Schema.createOptions({
+    description: 'React Native CLI Tools',
+    globalOptions: [
+      {
+        name: 'help',
+        type: z.boolean().optional().describe('Print this help message.'),
+        aliases: ['h'],
+      },
+      {
+        name: 'version',
+        type: z.boolean().optional().describe('Print the CLI version.'),
+        aliases: ['v'],
+      },
+    ],
+  });
+
+  const results = Schema.parse(
     emulatorCommand.schema,
     startServerCommand.schema,
     installApkCommand.schema,
@@ -42,41 +71,27 @@ async function app() {
     generateAndroidFontsCommand.schema,
     generateAndroidKeyCommand.schema,
     helpSchema,
-    {
-      description: 'React Native CLI Tools',
-      globalOptions: [
-        {
-          name: 'help',
-          type: z.boolean().optional().describe('Print this help message.'),
-          aliases: ['h'],
-        },
-        {
-          name: 'version',
-          type: z.boolean().optional().describe('Print the CLI version.'),
-          aliases: ['v'],
-        },
-      ],
-    },
+    parseOptions,
   );
 
   // when parsing arguments fails
-  if (!parsedArguments.success) {
-    const { issues } = parsedArguments.error;
+  if (!results.success) {
+    const { issues } = results.error;
     Log.error('\n', issues.map(i => `[ ${i.path} ] : ${i.message}`).join('\n'), '\n');
     process.exit(1);
   }
 
-  const data = parsedArguments.data;
+  const data = results.data;
 
   if (!data.command) {
     const { help, version } = data;
     if (help) {
-      parse.printHelp();
+      Schema.printHelp();
       return;
     }
 
-    if(version) {
-      Log.info("\nReact Native CLI Tools v1.0.0\n");
+    if (version) {
+      Log.info('\nReact Native CLI Tools v1.0.0\n');
       return;
     }
 
@@ -84,7 +99,7 @@ async function app() {
   }
 
   if (data.command === 'help') {
-    parse.printHelp();
+    Schema.printHelp();
   }
 
   if (data.command === 'emulator') {

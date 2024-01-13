@@ -1,6 +1,6 @@
-import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
-import { $ } from '@/cli-tools/terminal.js';
 import { Log } from '@/cli-tools/logger.js';
+import { $ } from '@/cli-tools/terminal.js';
+import Schema from '@schema';
 import { askToChooseDevice } from '@utils/utils.js';
 import chalk from 'chalk';
 import { spawn } from 'child_process';
@@ -77,7 +77,7 @@ export async function emulatorCommand(emulatorName?: string) {
   runAnEmulator(targetEmulator);
 }
 
-emulatorCommand.schema = createCommandSchema({
+emulatorCommand.schema = Schema.createCommand({
   command: 'emulator',
   description: 'Launch an emulator',
   options: [

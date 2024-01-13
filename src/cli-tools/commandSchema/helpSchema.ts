@@ -70,10 +70,10 @@ export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: st
   };
 }
 
-export function printHelp(schema: ReturnType<typeof commandsSchemaToHelpSchema>) {
+export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHelpSchema>) {
   const c = {
     title: chalk.bold.blue.inverse,
-    optionsTitle: chalk.bold.hex('#00fff4'),
+    aliasesTitle: chalk.hex('#E91E63'),
     command: chalk.bold.yellow,
     options: chalk.cyan,
     args: chalk.green,
@@ -96,7 +96,14 @@ export function printHelp(schema: ReturnType<typeof commandsSchemaToHelpSchema>)
   const nl = (count: number) => '\n'.repeat(count);
   const indent = (count: number) => ' '.repeat(count);
 
-  const longestCommandName = Math.max(...schema.commands.map(c => (c.name ? c.name.length : 0)));
+  const longestCommandName = Math.max(...schema.commands.map(command => command.name?.length ?? 0));
+  const longestGlobalSyntax = Math.max(...schema.globalOptions.map(option => option?.syntax?.length ?? 0));
+  const longestSyntax = Math.max(
+    ...schema.commands.map(command =>
+      command.options ? Math.max(...command.options.map(option => option.syntax?.length ?? 0), 0) : 0,
+    ),
+  );
+  const longest = Math.max(longestCommandName, longestGlobalSyntax, longestSyntax);
 
   if (schema.description) {
     console.log(c.title(' Description '), nl(1));
@@ -118,17 +125,14 @@ export function printHelp(schema: ReturnType<typeof commandsSchemaToHelpSchema>)
         nl(1),
         c.dim('#'),
         c.command(name),
-        description ? indent(longestCommandName + 5 - name.length) + c.dim('- ') + description : '',
+        description ? indent(longest + 6 - name.length) + c.dim('- ') + description : '',
       );
 
       if (aliases) {
-        console.log(indent(longestCommandName + 8), c.dim.bold('Aliases:'), c.alias(aliases.join(c.dim(', '))));
+        console.log(indent(longest + 9), c.aliasesTitle('Aliases  '), c.alias(aliases.join(c.dim(', '))));
       }
 
       if (!options) continue;
-
-      // console.log(nl(1), indent(1), c.optionsTitle('Options:'));
-      const longestOptionName = 2 + Math.max(...options.map(o => (o.syntax ? o.syntax.length : 0)));
 
       for (let o = 0; o < options.length; o++) {
         const { syntax, isOptional, description, aliases } = options[o];
@@ -136,13 +140,13 @@ export function printHelp(schema: ReturnType<typeof commandsSchemaToHelpSchema>)
           nl(1),
           indent(2),
           formatSyntax(syntax),
-          indent(longestOptionName + 4 - syntax.length),
+          indent(longest + 4 - syntax.length),
           c.optional(isOptional ? '[optional]' : '[required]'),
           description ? c.dim('- ') + description : '',
         );
 
         if (aliases) {
-          console.log(indent(longestOptionName + 9), c.dim.bold('Aliases:'), c.alias(aliases.join(c.dim(', '))));
+          console.log(indent(longest + 9), c.aliasesTitle('Aliases   '), c.alias(aliases.join(c.dim(', '))));
         }
       }
     }
@@ -157,8 +161,6 @@ export function printHelp(schema: ReturnType<typeof commandsSchemaToHelpSchema>)
 
     console.log(c.title(' Global Options '));
 
-    const longestOptionName = 2 + Math.max(...globalOptions.map(o => (o && o.syntax ? o.syntax.length : 0)));
-
     for (let i = 0; i < globalOptions.length; i++) {
       const { syntax, isOptional, description, aliases } = globalOptions[i];
 
@@ -166,13 +168,13 @@ export function printHelp(schema: ReturnType<typeof commandsSchemaToHelpSchema>)
         nl(1),
         indent(2),
         formatSyntax(syntax),
-        indent(longestOptionName + 4 - syntax.length),
+        indent(longest + 4 - syntax.length),
         c.optional(isOptional ? '[optional]' : '[required]'),
         description ? c.dim('- ') + description : '',
       );
 
       if (aliases) {
-        console.log(indent(longestOptionName + 9), c.dim.bold('Aliases:'), c.alias(aliases.join(c.dim(', '))));
+        console.log(indent(longest + 9), c.aliasesTitle('Aliases   '), c.alias(aliases.join(c.dim(', '))));
       }
     }
   }

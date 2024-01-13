@@ -1,6 +1,6 @@
-import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
-import { spinner } from '@/cli-tools/spinner.js';
 import { Log } from '@/cli-tools/logger.js';
+import { spinner } from '@/cli-tools/spinner.js';
+import Schema from '@schema';
 import {
   adbInstallApk,
   askToChooseDevice,
@@ -108,7 +108,7 @@ export async function installApkCommand(deviceName?: string, variant?: 'debug' |
   loading.success('APK installed successfully');
 }
 
-installApkCommand.schema = createCommandSchema({
+installApkCommand.schema = Schema.createCommand({
   command: 'install-apk',
   description: 'Install the built APK on the connected device.',
   options: [
@@ -129,6 +129,6 @@ installApkCommand.schema = createCommandSchema({
       name: 'release',
       type: z.boolean().optional().describe('Install the release variant.'),
       aliases: ['r'],
-    }
+    },
   ],
 });

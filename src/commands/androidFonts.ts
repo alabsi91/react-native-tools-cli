@@ -1,5 +1,5 @@
-import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
 import { Log } from '@/cli-tools/logger.js';
+import Schema from '@schema';
 import { askToEnterProjectRootPath, isReactNativeRootDir } from '@utils/utils.js';
 import chalk from 'chalk';
 import { existsSync } from 'fs';
@@ -251,7 +251,7 @@ export async function generateAndroidFontsCommand(projectPath = '') {
   printCodeExample(fontsFamilies);
 }
 
-generateAndroidFontsCommand.schema = createCommandSchema({
+generateAndroidFontsCommand.schema = Schema.createCommand({
   command: 'generate-fonts',
   description: 'Setup fonts on Android using ./src/assets/fonts/',
   options: [

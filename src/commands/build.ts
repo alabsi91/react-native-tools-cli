@@ -1,6 +1,6 @@
-import { createCommandSchema } from '@/cli-tools/commandSchema/commandSchema.js';
-import { cmdPassThrough } from '@/cli-tools/terminal.js';
 import { Log } from '@/cli-tools/logger.js';
+import { cmdPassThrough } from '@/cli-tools/terminal.js';
+import Schema from '@schema';
 import { askToEnterProjectRootPath, isReactNativeRootDir } from '@utils/utils.js';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
@@ -110,7 +110,7 @@ export async function buildCommand(operationName?: (typeof CHOICES)[number]['nam
   Log.success('\nDone!\n');
 }
 
-buildCommand.schema = createCommandSchema({
+buildCommand.schema = Schema.createCommand({
   command: 'build',
   description: 'Build the React Native Android project',
   options: [
