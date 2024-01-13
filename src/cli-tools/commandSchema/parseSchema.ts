@@ -5,7 +5,7 @@ import { validateDevInput } from './validate.js';
 import { CONSTANTS } from '@cli/terminal.js';
 import { z } from 'zod';
 import { Log } from '../logger.js';
-import type { AllowedOptionTypes, CommandOptions, CommandSchema, ParseOptions, ParseReturnType } from './types.js';
+import type { CommandSchema, ParseOptions, ParseReturnType } from './types.js';
 
 export const NO_COMMAND = 'noCommandIsProvided';
 
@@ -94,12 +94,10 @@ export let printHelp = () => {
 };
 
 export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<T>;
-export function parse<
-  T extends CommandSchema[],
-  NAME extends string,
-  TYPE extends AllowedOptionTypes,
-  OPTIONS_ARRAY extends CommandOptions<NAME, TYPE>,
->(...params: [...T, ParseOptions<OPTIONS_ARRAY>]): ParseReturnType<[...T, { command: undefined; options: OPTIONS_ARRAY[] }]>;
+export function parse<T extends CommandSchema[], const O extends ParseOptions>(
+  ...params: [...T, O]
+  // @ts-expect-error undefined in globalOptions
+): ParseReturnType<[...T, { command: undefined; options: O['globalOptions'] }]>;
 
 export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<T> {
   const options = ('globalOptions' in params[params.length - 1] ? params.pop() : {}) as ParseOptions;
@@ -146,10 +144,6 @@ export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<
   return refined.safeParse(results);
 }
 
-export function createParseOptions<
-  NAME extends string,
-  TYPE extends AllowedOptionTypes,
-  OPTIONS_ARRAY extends CommandOptions<NAME, TYPE>,
->(options: ParseOptions<OPTIONS_ARRAY>) {
+export function createParseOptions<const T extends ParseOptions>(options: T) {
   return options;
 }

@@ -1,20 +1,10 @@
 import { z } from 'zod';
 import { NO_COMMAND } from './parseSchema.js';
 
-import type { AllowedOptionTypes, CommandOptions, CommandSchema, RemoveNeverUndefined, SchemaToZodUnion } from './types.js';
+import type { AllowedOptionTypes, CommandSchema, SchemaToZodUnion } from './types.js';
 
-export function createCommandSchema<
-  COMMAND extends string,
-  OPTION_NAME extends string,
-  OPTION_TYPE extends AllowedOptionTypes,
-  OPTIONS_ARRAY extends CommandOptions<OPTION_NAME, OPTION_TYPE>[] | undefined = undefined,
->(command: CommandSchema<COMMAND, OPTION_NAME, OPTION_TYPE, OPTIONS_ARRAY>) {
-  return {
-    command: command.command,
-    description: command.description,
-    aliases: command.aliases,
-    options: command.options as RemoveNeverUndefined<OPTIONS_ARRAY>,
-  };
+export function createCommandSchema<const T extends CommandSchema>(command: T) {
+  return command;
 }
 
 export function schemaIntoZodUnion<T extends CommandSchema[]>(schema: T) {

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
 type ZodString =
   | z.ZodString
@@ -30,12 +30,7 @@ type ZodLiteral =
 
 export type AllowedOptionTypes = ZodString | ZodNumber | ZodBoolean | ZodLiteral;
 
-export type CommandSchema<
-  COMMAND = string | undefined,
-  OPTION_NAME = string,
-  OPTION_TYPE = AllowedOptionTypes,
-  OPTIONS_ARRAY = CommandOptions<OPTION_NAME, OPTION_TYPE>[],
-> = {
+export type CommandSchema = {
   /**
    * - The command name.
    * - A single lowercase word.
@@ -45,7 +40,7 @@ export type CommandSchema<
    *   command: 'test',
    *   command: 'run-app',
    */
-  command: COMMAND;
+  command: string;
   /**
    * - The aliases of the command.
    * - Make sure to not duplicate aliases.
@@ -54,10 +49,10 @@ export type CommandSchema<
   /** - The description of the command. */
   description?: string;
 
-  options?: OPTIONS_ARRAY;
+  options?: CommandOptions[];
 };
 
-export type CommandOptions<OPTION_NAME = string, OPTION_TYPE = AllowedOptionTypes> = {
+type CommandOptions = {
   /**
    * - Specifies the name of the option.
    * - This name will be transformed into kebab-case and used as the option's identifier in the command.
@@ -66,7 +61,7 @@ export type CommandOptions<OPTION_NAME = string, OPTION_TYPE = AllowedOptionType
    *   name: 'help'; // Transforms to `--help`
    *   name: 'rootPath'; // Transforms to `--root-path`
    */
-  name: OPTION_NAME;
+  name: string;
   /**
    * - The type of the option.
    * - The will be used to validate the option's value.
@@ -76,7 +71,7 @@ export type CommandOptions<OPTION_NAME = string, OPTION_TYPE = AllowedOptionType
    *   type: z.boolean().optional().describe('Describe the option'),
    *   type: z.string().describe('Describe the option'),
    */
-  type: OPTION_TYPE;
+  type: AllowedOptionTypes;
   /**
    * - The aliases of the option.
    * - Use only a single character if the option type is a `boolean`.
@@ -84,8 +79,6 @@ export type CommandOptions<OPTION_NAME = string, OPTION_TYPE = AllowedOptionType
    */
   aliases?: string[];
 };
-
-export type RemoveNeverUndefined<T> = T extends never | undefined ? T : T;
 
 type MakeZodStrictObject<T extends z.ZodRawShape> = z.ZodObject<T, 'strict'>;
 
@@ -109,9 +102,10 @@ export type SchemaToZodUnion<T extends CommandSchema[]> = z.ZodDiscriminatedUnio
   'command',
   [SchemaToZodObjArr<T>[number], SchemaToZodObjArr<T>[number], ...SchemaToZodObjArr<T>]
 >;
-export type ParseOptions<OPTIONS_ARRAY extends CommandOptions = CommandOptions> = {
+
+export type ParseOptions = {
   /** - CLI global options, when no command is given, Example: `--version` */
-  globalOptions?: OPTIONS_ARRAY[];
+  globalOptions?: CommandOptions[];
   /** - Validate the schema, it's recommended to set this to `false` in production */
   validateSchema?: boolean;
   /** - The CLI name that starts your CLI */
