@@ -253,7 +253,7 @@ export async function generateAndroidFontsCommand(projectPath = '') {
 
 generateAndroidFontsCommand.schema = Schema.createCommand({
   command: 'generate-fonts',
-  description: 'Setup fonts on Android using ./src/assets/fonts/',
+  description: 'Setup fonts on Android using ./src/assets/fonts/ .',
   options: [
     {
       name: 'path',

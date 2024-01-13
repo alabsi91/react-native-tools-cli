@@ -112,7 +112,7 @@ export async function buildCommand(operationName?: (typeof CHOICES)[number]['nam
 
 buildCommand.schema = Schema.createCommand({
   command: 'build',
-  description: 'Build the React Native Android project',
+  description: 'Build the React Native Android project.',
   options: [
     {
       name: 'path',

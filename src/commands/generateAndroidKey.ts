@@ -218,7 +218,7 @@ export async function generateAndroidKeyCommand(projectPath = '') {
 
 generateAndroidKeyCommand.schema = Schema.createCommand({
   command: 'generate-key',
-  description: 'Generate android signing key and add it to build.gradle',
+  description: 'Generate android signing key and add it to build.gradle.',
   options: [
     {
       name: 'path',

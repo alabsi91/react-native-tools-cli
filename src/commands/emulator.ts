@@ -83,7 +83,7 @@ emulatorCommand.schema = Schema.createCommand({
   options: [
     {
       name: 'device',
-      type: z.string().optional().describe('Specify a device to connect to before starting the serve.'),
+      type: z.string().optional().describe('Specify a device to connect to before starting the server.'),
     },
   ],
 });
