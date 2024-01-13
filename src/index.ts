@@ -60,9 +60,23 @@ async function app() {
   // when parsing arguments fails
   if (!results.success) {
     // ? See Zod docs for more information: `https://zod.dev/?id=error-handling`
-    const { issues } = results.error;
-    Log.error('\n', issues.map(i => `[ ${i.path} ] : ${i.message}`).join('\n'), '\n');
-    Schema.printHelp(); // 🖨️ print help message on error
+    const err = results.error.format();
+
+    for (const key in err) {
+      const el = err[key as keyof typeof err];
+      if (!el) continue;
+
+      if (Array.isArray(el) && el.length) {
+        Log.error(el.join('\n'), '\n');
+        continue;
+      }
+
+      if ('_errors' in el) Log.error(key, ':', el._errors.join('\n'), '\n');
+    }
+
+    // 🖨️ print help message on error
+    Schema.printHelp();
+
     process.exit(1);
   }
 

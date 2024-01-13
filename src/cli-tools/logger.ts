@@ -39,7 +39,7 @@ function formatLogTitle(title: string, color: ColorName) {
 }
 
 function getNewlines(messages: string[]) {
-  const message = messages.join('');
+  const message = messages.join(' ');
   const newlineRegex = /^(\s*[\n\r]+)/;
   const match = message.match(newlineRegex);
 

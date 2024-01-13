@@ -75,7 +75,10 @@ export function cleanTerminalColors(inputString: string) {
  */
 export function testCliArgsInput(input: string) {
   const regex = /\s(?=(?:(?:[^"]*"){2})*[^"]*$)/;
-  const result = input.split(regex).map(item => item.replace(/"/g, ''));
+  const result = input
+    .split(regex)
+    .map(item => item.replace(/"/g, ''))
+    .filter(Boolean);
   process.argv.push(...result);
 }
 

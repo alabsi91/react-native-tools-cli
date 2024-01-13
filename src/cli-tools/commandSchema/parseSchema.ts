@@ -111,7 +111,14 @@ export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<
   }
 
   // validate schema and throw error if it fails
-  if (options.validateSchema ?? CONSTANTS.isDev) validateDevInput(commands);
+  if (options.validateSchema ?? CONSTANTS.isDev) {
+    try {
+      validateDevInput(commands);
+    } catch (error) {
+      Log.error(error as string);
+      process.exit(1);
+    }
+  }
 
   const zodUnion = schemaIntoZodUnion(commands);
   const { results, syntax } = parseArguments(commands);
