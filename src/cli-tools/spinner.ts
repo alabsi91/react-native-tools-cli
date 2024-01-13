@@ -74,12 +74,12 @@ export function spinner(message: string, autoStopTimer = 0) {
     /** ✅ stop with a success styled message. */
     success(endMessage: string) {
       stop();
-      Log.success(endMessage, '\n\n'); // 🖨️ print end message to the console.
+      Log.success(endMessage, '\n'); // 🖨️ print end message to the console.
     },
     /** ⛔ stop with an error styled message. */
     error(endMessage: string) {
       stop();
-      Log.error(endMessage, '\n\n'); // 🖨️ print end message to the console.
+      Log.error(endMessage, '\n'); // 🖨️ print end message to the console.
     },
     /** Stop with a none styled message. */
     log(logMessage: string) {

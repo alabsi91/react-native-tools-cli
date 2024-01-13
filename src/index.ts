@@ -18,15 +18,21 @@ const coolGradient = gradient([
 // ? `https://www.kammerl.de/ascii/AsciiSignature.php` 👈 to convert your app's title to ASCII art.
 // ? `https://codebeautify.org/javascript-escape-unescape` 👈 escape your title's string for JavaScript.
 console.log(
-  coolGradient(
-    ' ___   __    ______   ______   ______         _________  ______       ______   __        ________    \n/__/\\ /__/\\ /_____/\\ /_____/\\ /_____/\\       /________/\\/_____/\\     /_____/\\ /_/\\      /_______/\\   \n\\::\\_\\\\  \\ \\\\:::_ \\ \\\\:::_ \\ \\\\::::_\\/_      \\__.::.__\\/\\::::_\\/_    \\:::__\\/ \\:\\ \\     \\__.::._\\/   \n \\:. `-\\  \\ \\\\:\\ \\ \\ \\\\:\\ \\ \\ \\\\:\\/___/\\   ___ /_\\::\\ \\  \\:\\/___/\\    \\:\\ \\  __\\:\\ \\       \\::\\ \\    \n  \\:. _    \\ \\\\:\\ \\ \\ \\\\:\\ \\ \\ \\\\::___\\/_ /__/\\\\:.\\::\\ \\  \\_::._\\:\\    \\:\\ \\/_/\\\\:\\ \\____  _\\::\\ \\__ \n   \\. \\`-\\  \\ \\\\:\\_\\ \\ \\\\:\\/.:| |\\:\\____/\\\\::\\ \\\\: \\  \\ \\   /____\\:\\    \\:\\_\\ \\ \\\\:\\/___/\\/__\\::\\__/\\\n    \\__\\/ \\__\\/ \\_____\\/ \\____/_/ \\_____\\/ \\:_\\/ \\_____\\/   \\_____\\/     \\_____\\/ \\_____\\/\\________\\/\n                                                                                                     \n',
-  ),
+  coolGradient(String.raw` 
+ __   __     ______     _____     ______       __     ______        ______     __         __   
+/\ "-.\ \   /\  __ \   /\  __-.  /\  ___\     /\ \   /\  ___\      /\  ___\   /\ \       /\ \  
+\ \ \-.  \  \ \ \/\ \  \ \ \/\ \ \ \  __\    _\_\ \  \ \___  \     \ \ \____  \ \ \____  \ \ \ 
+ \ \_\\"\_\  \ \_____\  \ \____-  \ \_____\ /\_____\  \/\_____\     \ \_____\  \ \_____\  \ \_\
+  \/_/ \/_/   \/_____/   \/____/   \/_____/ \/_____/   \/_____/      \/_____/   \/_____/   \/_/
+                                                                                               
+`),
 );
 
 // ⚠️ For testing in development mode only
 if (CONSTANTS.isDev) {
   // Here you can test your CLI arguments while using hot reload in development mode.
-  testCliArgsInput('test --your-name="John Doe" --age=25 extraArg andAnotherArg');
+  testCliArgsInput('-h');
+  // testCliArgsInput('test --your-name="John Doe" --age=25 extraArg andAnotherArg');
 }
 
 async function app() {
@@ -77,7 +83,7 @@ async function app() {
   if (command === 'test') {
     const { age, name, args } = results.data;
     await testCommand(name, age);
-    if (args.length) Log.warn('\nYou Passed extra arguments: ', args.join(' '));
+    if (args.length) Log.warn('\nYou Passed extra arguments: ', args.join(', '));
   }
 }
 

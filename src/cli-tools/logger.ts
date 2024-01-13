@@ -15,22 +15,22 @@ export function Log(...messages: unknown[]) {
 
 Log.warn = (...messages: string[]) => {
   const { newlines, afterNewline } = getNewlines(messages);
-  console.log(newlines, formatLogTitle('WARNING', 'yellow'), chalk.bold.yellow(afterNewline));
+  console.log(newlines, formatLogTitle('WARNING', 'yellow'), chalk.yellow(afterNewline));
 };
 
 Log.success = (...messages: string[]) => {
   const { newlines, afterNewline } = getNewlines(messages);
-  console.log(newlines, formatLogTitle('SUCCESS', 'green'), chalk.bold.green(afterNewline));
+  console.log(newlines, formatLogTitle('SUCCESS', 'green'), chalk.green(afterNewline));
 };
 
 Log.error = (...messages: string[]) => {
   const { newlines, afterNewline } = getNewlines(messages);
-  console.log(newlines, formatLogTitle('ERROR', 'red'), chalk.bold.red(afterNewline));
+  console.log(newlines, formatLogTitle('ERROR', 'red'), chalk.red(afterNewline));
 };
 
 Log.info = (...messages: string[]) => {
   const { newlines, afterNewline } = getNewlines(messages);
-  console.log(newlines, formatLogTitle('INFO', 'blue'), chalk.bold.blue(afterNewline));
+  console.log(newlines, formatLogTitle('INFO', 'blue'), chalk.blue(afterNewline));
 };
 
 function formatLogTitle(title: string, color: ColorName) {
