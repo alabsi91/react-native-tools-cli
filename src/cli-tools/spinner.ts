@@ -1,7 +1,6 @@
 import { sleep } from '@cli/terminal.js';
-import chalk from "chalk";
+import chalk from 'chalk';
 import { Log } from './logger.js';
-
 
 // ? 💁 See `https://github.com/sindresorhus/cli-spinners/blob/main/spinners.json` for more spinners.
 const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
@@ -49,7 +48,6 @@ export function spinner(message: string, autoStopTimer = 0) {
     process.stdin.resume();
     process.stdout.write('\u001b[6n'); // will report the cursor position to the application
 
-
     // 🕐 wait for a certain amount of time before stopping the spinner.
     if (timer) {
       await sleep(timer);
@@ -67,7 +65,6 @@ export function spinner(message: string, autoStopTimer = 0) {
 
   start(); // 🚀 start the spinner.
 
-
   // ↪️ return a function to stop the spinner with a message.
   return {
     /** 🚀 start the spinner. this will stop the previous one. */
@@ -75,17 +72,17 @@ export function spinner(message: string, autoStopTimer = 0) {
     /** 🛑 stop the animation and clear it. */
     stop,
     /** ✅ stop with a success styled message. */
-    success: function (endMessage: string) {
+    success(endMessage: string) {
       stop();
       Log.success(endMessage, '\n\n'); // 🖨️ print end message to the console.
     },
     /** ⛔ stop with an error styled message. */
-    error: function (endMessage: string) {
+    error(endMessage: string) {
       stop();
       Log.error(endMessage, '\n\n'); // 🖨️ print end message to the console.
     },
     /** Stop with a none styled message. */
-    log: function (logMessage: string) {
+    log(logMessage: string) {
       stop();
       process.stdout.write(logMessage); // 🖨️ print end message to the console.
     },

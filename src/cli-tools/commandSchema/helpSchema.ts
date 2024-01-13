@@ -70,7 +70,7 @@ export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: st
   };
 }
 
-export function printHelp(schema: ReturnType<typeof commandsSchemaToHelpSchema>) {
+export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHelpSchema>) {
   const c = {
     title: chalk.bold.blue.inverse,
     optionsTitle: chalk.bold.hex('#00fff4'),

@@ -2,7 +2,9 @@
 
 import { parse } from '@cli/commandSchema/parseSchema.js';
 import { Log } from '@cli/logger.js';
+import { CONSTANTS, testCliArgsInput } from '@cli/terminal.js';
 import testCommand from '@commands/test-command.js';
+import Schema from '@schema';
 import gradient from 'gradient-string';
 import { z } from 'zod';
 
@@ -21,12 +23,17 @@ console.log(
   ),
 );
 
+// ⚠️ For testing in development mode only
+if (CONSTANTS.isDev) {
+  // Here you can test your CLI arguments while using hot reload in development mode.
+  testCliArgsInput('test --your-name="John Doe" --age=25 extraArg andAnotherArg');
+}
+
 async function app() {
-  // add all commands schema here 👇
-  const parsedArguments = parse(testCommand.schema, {
+  const options = Schema.createOptions({
     cliName: 'node-cli', // The CLI name that starts your CLI, used for help command.
     description: 'A CLI for testing.', // For help command
-    validateSchema: true, // Throw an error if the schema is invalid. recommended to set to false in production.
+    validateSchema: CONSTANTS.isDev, // Throw an error if the schema is invalid. recommended to set to false in production.
     // global options are used when no command is specified, for example: `node-cli --help`
     globalOptions: [
       {
@@ -42,31 +49,35 @@ async function app() {
     ],
   });
 
+  // Add all commands schemas here 👇
+  const results = parse(testCommand.schema /** , You can add more */, options);
+
   // when parsing arguments fails
-  if (!parsedArguments.success) {
-    // ? See Zod docs for more info `https://zod.dev/?id=error-handling`
-    const { issues } = parsedArguments.error;
+  if (!results.success) {
+    // ? See Zod docs for more information: `https://zod.dev/?id=error-handling`
+    const { issues } = results.error;
     Log.error('\n', issues.map(i => `[ ${i.path} ] : ${i.message}`).join('\n'), '\n');
-    parse.printHelp(); // 🖨️ print help message on error
+    Schema.printHelp(); // 🖨️ print help message on error
     process.exit(1);
   }
 
-  const { command } = parsedArguments.data;
+  const { command } = results.data;
 
   if (!command) {
-    const { version } = parsedArguments.data;
+    const { version } = results.data;
     if (version) {
       Log.info('\n  version: 1.0.0\n');
       return;
     }
 
-    parse.printHelp();
+    Schema.printHelp();
     return;
   }
 
   if (command === 'test') {
-    const { age, name } = parsedArguments.data;
-    testCommand(name, age);
+    const { age, name, args } = results.data;
+    await testCommand(name, age);
+    if (args.length) Log.warn('\nYou Passed extra arguments: ', args.join(' '));
   }
 }
 

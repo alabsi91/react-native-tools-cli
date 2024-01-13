@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
 type ZodString =
   | z.ZodString
@@ -112,7 +112,10 @@ export type SchemaToZodUnion<T extends CommandSchema[]> = z.ZodDiscriminatedUnio
 export type ParseOptions<OPTIONS_ARRAY extends CommandOptions = CommandOptions> = {
   /** - CLI global options, when no command is given, Example: `--version` */
   globalOptions?: OPTIONS_ARRAY[];
-  /** - Validate the schema, it's recommended to set this to `false` in production */
+  /**
+   * - Validate the schema, it's recommended to set this to `false` in production
+   * - **Default**: true if in development mode
+   */
   validateSchema?: boolean;
   /** - The CLI name that starts your CLI */
   cliName?: string;

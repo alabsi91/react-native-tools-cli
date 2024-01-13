@@ -35,7 +35,9 @@ const plugins = [
       outfile,
       format: 'esm',
       bundle: true,
-      define: { DEBUG: 'true' },
+      define: {
+        'process.env.NODE_ENV': '"development"',
+      },
       plugins,
     });
 
@@ -47,7 +49,7 @@ const plugins = [
 })();
 
 // to run bundled file.
-async function run() {
+function run() {
   // 🔪 kill last spawned worker
   if (worker) {
     try {
@@ -65,7 +67,7 @@ async function run() {
   worker = spawn('node', [outfile, ...process.argv.slice(2)], { stdio: 'inherit' });
 
   //👂 listen for worker exit signal.
-  worker.on('exit', async code => {
+  worker.on('exit', code => {
     if (code !== 0) return;
     console.log(chalk.yellow(`\n\n🕐 Waiting for new changes ...`));
   });

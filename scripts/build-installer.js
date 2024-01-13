@@ -18,7 +18,7 @@ const outFolder = 'installer',
   entryFile = 'src/index.ts',
   nodeVersion = 'latest-v18.x',
   nodeDownloadLink = `https://nodejs.org/dist/${nodeVersion}/win-x64/node.exe`,
-  makensis = path.normalize('C:/Program Files (x86)/NSIS/makensis.exe'), // NSIS cli path.
+  makeNsis = path.normalize('C:/Program Files (x86)/NSIS/makensis.exe'), // NSIS cli path.
   includeNodejs = false, // include nodejs in the installer. makes the installer larger in size.
   cleanAfterBuild = false; // 🗑️ remove all files after build except `installer.exe`
 
@@ -138,7 +138,7 @@ const outFolder = 'installer',
   // * 💿 create the installer
   try {
     progress = loading('- Creating NSIS installer ...');
-    await cmd(`"${makensis}" "${path.resolve(path.normalize(`${outFolder}/installer.nsi`))}"`);
+    await cmd(`"${makeNsis}" "${path.resolve(path.normalize(`${outFolder}/installer.nsi`))}"`);
     progress('- NSIS installer created successfully!');
   } catch (e) {
     progress('- Error creating NSIS installer ...', true);

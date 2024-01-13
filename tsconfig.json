@@ -2,10 +2,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@schema": ["src/cli-tools/commandSchema/index.ts"],
       "@commands/*": ["src/commands/*"],
       "@utils/*": ["src/utils/*"],
       "@cli/*": ["src/cli-tools/*"],
+      "@/*": ["src/*"],
       "@types": ["src/types.js"]
     },
     "module": "Node16",
@@ -17,8 +18,7 @@
     "forceConsistentCasingInFileNames": true,
     "removeComments": true,
     "skipLibCheck": true,
-    "sourceMap": true,
-    // "resolveJsonModule": true
+    "sourceMap": true
   },
   "include": ["src"],
   "exclude": ["node_modules"]

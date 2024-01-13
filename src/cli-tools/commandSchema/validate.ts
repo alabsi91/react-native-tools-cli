@@ -1,5 +1,4 @@
-import { z } from 'zod';
-
+import type { z } from 'zod';
 import type { CommandSchema } from './types.js';
 
 function checkForDuplicates(arr: (string | undefined)[]) {

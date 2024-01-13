@@ -2,6 +2,8 @@ import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 
 import type { ExecOptions, SpawnOptions } from 'child_process';
+import { realpathSync } from 'fs';
+import path from 'path';
 
 /**
  * - Spawns a shell then executes the command within that shell.
@@ -63,3 +65,33 @@ export function cleanTerminalColors(inputString: string) {
   const cleanedString = inputString.replace(colorRegex, '');
   return cleanedString;
 }
+
+/**
+ * - To test your cli arguments when using hot reload in development mode.
+ * - Make sure to remove the test argument before using it in production.
+ *
+ * @example
+ *   testCliArgsInput('command --test-arg="test"');
+ */
+export function testCliArgsInput(input: string) {
+  const regex = /\s(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+  const result = input.split(regex).map(item => item.replace(/"/g, ''));
+  process.argv.push(...result);
+}
+
+export const CONSTANTS = {
+  /** - Get the current platform */
+  platform: process.platform,
+  isWindows: process.platform === 'win32',
+  isMac: process.platform === 'darwin',
+  isLinux: process.platform === 'linux',
+  /** - Check if we are in development mode */
+  isDev: process.env.NODE_ENV === 'development',
+  /** - Get the project root directory full path */
+  get projectRoot() {
+    const scriptPath = realpathSync(process.argv[1]);
+    const suffixesToRemove = ['.dev-server', 'dist'];
+    const pattern = new RegExp(`(${suffixesToRemove.join('|')})$`);
+    return path.dirname(scriptPath).replace(pattern, '');
+  },
+};
