@@ -83,7 +83,7 @@ startServerCommand.schema = Schema.createCommand({
     {
       name: 'clear',
       type: z.boolean().optional().describe('Clear the cache before starting the server.'),
-      aliases: ['reset-cache', 'c'],
+      aliases: ['resetCache', 'c'],
     },
   ],
 });
