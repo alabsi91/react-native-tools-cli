@@ -31,7 +31,7 @@ console.log(
 // ⚠️ For testing in development mode only
 if (CONSTANTS.isDev) {
   // Here you can test your CLI arguments while using hot reload in development mode.
-  testCliArgsInput('-v kjk');
+  testCliArgsInput('test --name="John Doe" --age="30" arg1 arg2 arg3');
 }
 
 async function app() {

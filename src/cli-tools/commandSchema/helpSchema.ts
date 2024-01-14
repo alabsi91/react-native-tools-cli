@@ -130,7 +130,7 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
         nl(1),
         c.dim('#'),
         c.command(name),
-        description ? indent(longest + 6 - name.length) + c.dim('- ') + description : '',
+        description ? indent(longest + 6 - name.length) + c.dim('• ') + description : '',
       );
 
       // Command Aliases
@@ -140,7 +140,7 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
 
       // Command Arguments Description
       if (argsDescription) {
-        console.log(indent(longest + 9), c.aliasesTitle('Arguments'), c.dim('-'), c.description(argsDescription));
+        console.log(indent(longest + 9), c.args('Arguments'), c.dim('•'), c.description(argsDescription));
       }
 
       if (!options) continue;
@@ -154,7 +154,7 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
           formatSyntax(syntax),
           indent(longest + 4 - syntax.length),
           c.optional(isOptional ? 'optional ' : 'required '),
-          description ? c.dim('- ') + description : '',
+          description ? c.dim('• ') + description : '',
         );
 
         // Options Aliases
@@ -176,7 +176,7 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
 
   // Global Arguments Description
   if (schema.global.argsDescription) {
-    console.log(nl(1), indent(2), c.aliasesTitle('Arguments'), indent(longest - 5), c.dim('-'), schema.global.argsDescription);
+    console.log(nl(1), indent(2), c.args.bold('Arguments:'), indent(longest - 6), c.dim('•'), schema.global.argsDescription);
   }
 
   // Global Options
@@ -189,7 +189,7 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
       formatSyntax(syntax),
       indent(longest + 4 - syntax.length),
       c.optional(isOptional ? 'optional ' : 'required '),
-      description ? c.dim('- ') + description : '',
+      description ? c.dim('• ') + description : '',
     );
 
     // Options Aliases
