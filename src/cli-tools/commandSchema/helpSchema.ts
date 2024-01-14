@@ -140,7 +140,7 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
 
       // Command Arguments Description
       if (argsDescription) {
-        console.log(indent(longest + 9), c.aliasesTitle('Arguments'), c.description(argsDescription));
+        console.log(indent(longest + 9), c.aliasesTitle('Arguments'), c.dim('-'), c.description(argsDescription));
       }
 
       if (!options) continue;
@@ -153,13 +153,13 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
           indent(2),
           formatSyntax(syntax),
           indent(longest + 4 - syntax.length),
-          c.optional(isOptional ? '[optional]' : '[required]'),
+          c.optional(isOptional ? 'optional ' : 'required '),
           description ? c.dim('- ') + description : '',
         );
 
         // Options Aliases
         if (aliases) {
-          console.log(indent(longest + 9), c.aliasesTitle('Aliases   '), c.alias(aliases.join(c.dim(', '))));
+          console.log(indent(longest + 9), c.aliasesTitle('Aliases  '), c.alias(aliases.join(c.dim(', '))));
         }
       }
     }
@@ -188,13 +188,13 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
       indent(2),
       formatSyntax(syntax),
       indent(longest + 4 - syntax.length),
-      c.optional(isOptional ? '[optional]' : '[required]'),
+      c.optional(isOptional ? 'optional ' : 'required '),
       description ? c.dim('- ') + description : '',
     );
 
     // Options Aliases
     if (aliases) {
-      console.log(indent(longest + 9), c.aliasesTitle('Aliases   '), c.alias(aliases.join(c.dim(', '))));
+      console.log(indent(longest + 9), c.aliasesTitle('Aliases  '), c.alias(aliases.join(c.dim(', '))));
     }
   }
 
