@@ -28,6 +28,8 @@ type ZodLiteral =
   | z.ZodOptional<z.ZodDefault<z.ZodLiteral<string | number>>>
   | z.ZodDefault<z.ZodOptional<z.ZodLiteral<string | number>>>;
 
+type ZodStringArray = z.ZodArray<z.ZodString, 'many'>;
+
 export type ZodArray =
   | z.ZodArray<z.ZodString, 'many' | 'atleastone'>
   | z.ZodArray<z.ZodNumber, 'many' | 'atleastone'>
@@ -35,7 +37,7 @@ export type ZodArray =
 
 export type AllowedOptionTypes = ZodString | ZodNumber | ZodBoolean | ZodLiteral;
 
-export type CommandSchema<A = ZodArray, O = [CommandOptions, ...CommandOptions[]]> = {
+export type CommandSchema<A = ZodArray> = {
   /**
    * - **Required** `string`
    * - The command name.
@@ -80,10 +82,10 @@ export type CommandSchema<A = ZodArray, O = [CommandOptions, ...CommandOptions[]
    * - The options of the command.
    * - Those options are specific to this command.
    */
-  options?: O;
+  options?: [CommandOptions, ...CommandOptions[]];
 };
 
-export type CommandOptions = {
+type CommandOptions = {
   /**
    * - **Required** `string`
    * - The name of the option.
@@ -123,8 +125,6 @@ type MakeZodStrictObject<T extends z.ZodRawShape> = z.ZodObject<T, 'strict'>;
 
 type MakeZodLiteral<T extends string | undefined> = z.ZodLiteral<T>;
 
-type ZodStringArray = z.ZodArray<z.ZodString, 'many'>;
-
 type GetArgsType<T extends ZodArray | undefined> = T extends ZodArray ? T : ZodStringArray;
 
 export type SchemaToZodObjArr<T extends CommandSchema[]> = {
@@ -152,7 +152,7 @@ export type SchemaToZodUnion<T extends CommandSchema[]> = z.ZodDiscriminatedUnio
   [SchemaToZodObjArr<T>[number], SchemaToZodObjArr<T>[number], ...SchemaToZodObjArr<T>]
 >;
 
-export type ParseOptions<A extends ZodArray = ZodStringArray> = {
+export type ParseOptions<A = ZodStringArray> = {
   /**
    * **Optional** `CommandOptions[]`
    *

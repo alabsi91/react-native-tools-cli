@@ -91,7 +91,7 @@ export let printHelp = () => {
 };
 
 export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<T>;
-export function parse<T extends CommandSchema[], const O extends ParseOptions<A>, A extends ZodArray>(
+export function parse<T extends CommandSchema[], const O extends ParseOptions<A>, const A extends ZodArray>(
   ...params: [...T, O]
   // @ts-expect-error undefined in globalOptions
 ): ParseReturnType<[...T, { command: undefined; argsType: O['argsType']; options: O['globalOptions'] }]>;
@@ -148,7 +148,7 @@ export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<
   return refined.safeParse(results);
 }
 
-export function createParseOptions<const T extends ParseOptions<A>, A extends ZodArray>(options: T & ParseOptions<A>) {
+export function createParseOptions<const T extends ParseOptions<A>, A extends ZodArray>(options: T & ParseOptions<A>): T {
   return options;
 }
 

@@ -1,13 +1,9 @@
 import { z } from 'zod';
 import { NO_COMMAND } from './parseSchema.js';
 
-import type { AllowedOptionTypes, CommandOptions, CommandSchema, SchemaToZodUnion, ZodArray } from './types.js';
+import type { AllowedOptionTypes, CommandSchema, SchemaToZodUnion, ZodArray } from './types.js';
 
-export function createCommandSchema<
-  const T extends CommandSchema<A, O>,
-  A extends ZodArray,
-  O extends [CommandOptions, ...CommandOptions[]] | undefined = undefined,
->(command: T & CommandSchema<A, O>) {
+export function createCommandSchema<const T extends CommandSchema<A>, A extends ZodArray>(command: T & CommandSchema<A>): T {
   return command;
 }
 
