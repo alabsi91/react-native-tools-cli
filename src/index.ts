@@ -31,7 +31,7 @@ console.log(
 // ⚠️ For testing in development mode only
 if (CONSTANTS.isDev) {
   // Here you can test your CLI arguments while using hot reload in development mode.
-  testCliArgsInput('test --your-name="John Doe" --age=25 extraArg andAnotherArg');
+  testCliArgsInput('test --name="John Doe" --age=30 argument1 argument2');
 }
 
 async function app() {
@@ -39,6 +39,8 @@ async function app() {
     cliName: 'node-cli', // The CLI name that starts your CLI, used for help command.
     description: 'A CLI for testing.', // For help command
     validateSchema: CONSTANTS.isDev, // Throw an error if the schema is invalid. recommended to set to false in production.
+    // Arguments type when no command is specified
+    argsType: z.string().array().length(0).describe('No arguments are required or allowed.'),
     // global options are used when no command is specified, for example: `node-cli --help`
     globalOptions: [
       {
@@ -60,19 +62,9 @@ async function app() {
   // when parsing arguments fails
   if (!results.success) {
     // ? See Zod docs for more information: `https://zod.dev/?id=error-handling`
-    const err = results.error.format();
 
-    for (const key in err) {
-      const el = err[key as keyof typeof err];
-      if (!el) continue;
-
-      if (Array.isArray(el) && el.length) {
-        Log.error(el.join('\n'), '\n');
-        continue;
-      }
-
-      if ('_errors' in el) Log.error(key, ':', el._errors.join('\n'), '\n');
-    }
+    // 🖨️ print a formate error message
+    Schema.formatError(results.error);
 
     // 🖨️ print help message on error
     Schema.printHelp();
@@ -84,6 +76,7 @@ async function app() {
 
   if (!command) {
     const { version } = results.data;
+
     if (version) {
       Log.info('\n  version: 1.0.0\n');
       return;
@@ -95,7 +88,9 @@ async function app() {
 
   if (command === 'test') {
     const { age, name, args } = results.data;
+
     await testCommand(name, age);
+
     if (args.length) Log.warn('\nYou Passed extra arguments: ', args.join(', '));
   }
 }

@@ -1,15 +1,19 @@
 import { z } from 'zod';
 import { NO_COMMAND } from './parseSchema.js';
 
-import type { AllowedOptionTypes, CommandSchema, SchemaToZodUnion } from './types.js';
+import type { AllowedOptionTypes, CommandOptions, CommandSchema, SchemaToZodUnion, ZodArray } from './types.js';
 
-export function createCommandSchema<const T extends CommandSchema>(command: T) {
+export function createCommandSchema<
+  const T extends CommandSchema<A, O>,
+  A extends ZodArray,
+  O extends [CommandOptions, ...CommandOptions[]] | undefined = undefined,
+>(command: T & CommandSchema<A, O>) {
   return command;
 }
 
 export function schemaIntoZodUnion<T extends CommandSchema[]>(schema: T) {
   type Results = z.ZodObject<
-    { command: z.ZodLiteral<string> | z.ZodOptional<z.ZodUndefined>; args: z.ZodArray<z.ZodString, 'many'> } & {
+    { command: z.ZodLiteral<string> | z.ZodOptional<z.ZodUndefined>; args: ZodArray } & {
       [k: string]: z.ZodTypeAny;
     },
     'strict'
@@ -31,10 +35,10 @@ export function schemaIntoZodUnion<T extends CommandSchema[]>(schema: T) {
 
     // add global options
     if (cmd.command === NO_COMMAND) {
-      results.push(z.object({ command: z.literal(undefined!), args: z.string().array(), ...options }).strict());
+      results.push(z.object({ command: z.literal(undefined!), args: cmd.argsType ?? z.string().array(), ...options }).strict());
     }
 
-    const zObject = z.object({ command: z.literal(cmd.command!), args: z.string().array(), ...options }).strict();
+    const zObject = z.object({ command: z.literal(cmd.command!), args: cmd.argsType ?? z.string().array(), ...options }).strict();
     results.push(zObject);
   }
 

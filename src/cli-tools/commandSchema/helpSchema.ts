@@ -36,27 +36,27 @@ export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: st
     return cliName;
   };
 
+  const global = schema.filter(c => c.command === NO_COMMAND)[0];
   return {
     name: cliName ?? 'node-cli',
     description: cliDescription,
     usage,
-    globalOptions: schema
-      .filter(c => c.command === NO_COMMAND)
-      .map(
-        c =>
-          c.options?.map(o => ({
-            syntax: getSyntax(o.name, o.type),
-            isOptional: o.type.isOptional(),
-            description: o.type.description,
-            aliases: o.aliases && o.aliases.map(a => getCliName(a)),
-          })),
-      )
-      .flat(),
+    global: {
+      argsDescription: global?.argsType?.description,
+      options:
+        global?.options?.map(o => ({
+          syntax: getSyntax(o.name, o.type),
+          isOptional: o.type.isOptional(),
+          description: o.type.description,
+          aliases: o.aliases && o.aliases.map(a => getCliName(a)),
+        })) ?? [],
+    },
     commands: schema
       .filter(c => c.command !== NO_COMMAND)
       .map(c => ({
         name: c.command,
         description: c.description,
+        argsDescription: c.argsType && c.argsType.description,
         aliases: c.aliases,
         options:
           c.options &&
@@ -94,10 +94,11 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
 
   /** New line */
   const nl = (count: number) => '\n'.repeat(count);
+  /** Space */
   const indent = (count: number) => ' '.repeat(count);
 
   const longestCommandName = Math.max(...schema.commands.map(command => command.name?.length ?? 0));
-  const longestGlobalSyntax = Math.max(...schema.globalOptions.map(option => option?.syntax?.length ?? 0));
+  const longestGlobalSyntax = Math.max(...schema.global.options.map(option => option?.syntax?.length ?? 0));
   const longestSyntax = Math.max(
     ...schema.commands.map(command =>
       command.options ? Math.max(...command.options.map(option => option.syntax?.length ?? 0), 0) : 0,
@@ -105,22 +106,26 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
   );
   const longest = Math.max(longestCommandName, longestGlobalSyntax, longestSyntax);
 
+  // * CLI Description
   if (schema.description) {
     console.log(c.title(' Description '), nl(1));
     console.log(indent(2), c.dim('-'), c.description(schema.description), nl(1));
   }
 
+  // * CLI Usage
   const usage = schema.usage ?? schema.name + c.command(' <command>') + c.options(' [options]') + c.args(' [args]');
   console.log(c.title(' Usage '), nl(1));
   console.log(indent(2), c.dim('$'), usage, nl(1));
 
+  // * Commands
   if (schema.commands.length) {
     console.log(c.title(' Commands '));
 
     for (let i = 0; i < schema.commands.length; i++) {
-      const { name, description, aliases, options } = schema.commands[i];
+      const { name, description, aliases, argsDescription, options } = schema.commands[i];
       if (!name) continue;
 
+      // Command
       console.log(
         nl(1),
         c.dim('#'),
@@ -128,12 +133,19 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
         description ? indent(longest + 6 - name.length) + c.dim('- ') + description : '',
       );
 
+      // Command Aliases
       if (aliases) {
         console.log(indent(longest + 9), c.aliasesTitle('Aliases  '), c.alias(aliases.join(c.dim(', '))));
       }
 
+      // Command Arguments Description
+      if (argsDescription) {
+        console.log(indent(longest + 9), c.aliasesTitle('Arguments'), c.description(argsDescription));
+      }
+
       if (!options) continue;
 
+      // Command Options
       for (let o = 0; o < options.length; o++) {
         const { syntax, isOptional, description, aliases } = options[o];
         console.log(
@@ -145,6 +157,7 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
           description ? c.dim('- ') + description : '',
         );
 
+        // Options Aliases
         if (aliases) {
           console.log(indent(longest + 9), c.aliasesTitle('Aliases   '), c.alias(aliases.join(c.dim(', '))));
         }
@@ -154,28 +167,34 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
 
   console.log('');
 
-  if (schema.globalOptions) {
-    const globalOptions = schema.globalOptions.filter(Boolean) as NonNullable<(typeof schema.globalOptions)[number]>[];
+  const globalOptions = schema.global.options;
 
-    if (globalOptions.length === 0) return;
+  if (globalOptions.length === 0) return;
 
-    console.log(c.title(' Global Options '));
+  // * Global
+  console.log(c.title(' Global '));
 
-    for (let i = 0; i < globalOptions.length; i++) {
-      const { syntax, isOptional, description, aliases } = globalOptions[i];
+  // Global Arguments Description
+  if (schema.global.argsDescription) {
+    console.log(nl(1), indent(2), c.aliasesTitle('Arguments'), indent(longest - 5), c.dim('-'), schema.global.argsDescription);
+  }
 
-      console.log(
-        nl(1),
-        indent(2),
-        formatSyntax(syntax),
-        indent(longest + 4 - syntax.length),
-        c.optional(isOptional ? '[optional]' : '[required]'),
-        description ? c.dim('- ') + description : '',
-      );
+  // Global Options
+  for (let i = 0; i < globalOptions.length; i++) {
+    const { syntax, isOptional, description, aliases } = globalOptions[i];
 
-      if (aliases) {
-        console.log(indent(longest + 9), c.aliasesTitle('Aliases   '), c.alias(aliases.join(c.dim(', '))));
-      }
+    console.log(
+      nl(1),
+      indent(2),
+      formatSyntax(syntax),
+      indent(longest + 4 - syntax.length),
+      c.optional(isOptional ? '[optional]' : '[required]'),
+      description ? c.dim('- ') + description : '',
+    );
+
+    // Options Aliases
+    if (aliases) {
+      console.log(indent(longest + 9), c.aliasesTitle('Aliases   '), c.alias(aliases.join(c.dim(', '))));
     }
   }
 

@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "start:dev": "node scripts/start-dev.js",
+    "test": "tsc --noEmit && eslint src --max-warnings 0",
     "build:js": "tsc && resolve-tspaths",
     "build:nsis": "node --no-warnings scripts/build-installer.js",
     "build:bundle": "esbuild src/index.ts --bundle --platform=node --target=node16 --outdir=bundle --out-extension:.js=.cjs --minify --tree-shaking=true",

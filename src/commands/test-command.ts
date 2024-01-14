@@ -20,6 +20,8 @@ testCommand.schema = Schema.createCommand({
   command: 'test',
   description: 'Run a command for testing.', // For help command
   aliases: ['run-test', 'test-command'], // Those aliases will be mapped to the command
+  // Arguments type for this command.
+  argsType: z.string().array().describe('You can pass any arguments to this command.'),
   options: [
     {
       name: 'age', // will be mapped to '--age'

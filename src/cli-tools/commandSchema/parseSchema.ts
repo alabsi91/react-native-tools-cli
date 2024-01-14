@@ -6,7 +6,7 @@ import { Log } from '@cli/logger.js';
 import { CONSTANTS } from '@cli/terminal.js';
 
 import { z } from 'zod';
-import type { CommandSchema, ParseOptions, ParseReturnType } from './types.js';
+import type { CommandSchema, ParseOptions, ParseReturnType, ZodArray } from './types.js';
 
 export const NO_COMMAND = 'noCommandIsProvided';
 
@@ -34,11 +34,9 @@ function parseArguments(schema: CommandSchema[]) {
 
   /** Get the key without the value E.g. `--output-text="text"` => `outputText` */
   const parseKey = (str: string) => {
-    if (!str.startsWith('-')) return null;
-    return str
-      .replace(/^-{1,2}/, '')
-      .replace(/=.+/, '')
-      .replace(/-\w/gi, t => t.substring(1).toUpperCase());
+    const match = str.toLowerCase().match(/^--?[a-z]+(?:-[a-z]+)*/);
+    if (!match || !match[0]) return null;
+    return match[0].replace(/^--?/, '').replace(/-\w/gi, t => t.substring(1).toUpperCase());
   };
 
   const results: { command?: string; args: string[]; [key: string]: unknown } = { args: [] };
@@ -56,8 +54,6 @@ function parseArguments(schema: CommandSchema[]) {
 
     // * options
     if (key !== null) {
-      if (value === null) continue;
-
       if (isOptionAlias(key)) {
         const option = optionAliasToOption(key);
         if (option) results[option] = value;
@@ -95,10 +91,10 @@ export let printHelp = () => {
 };
 
 export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<T>;
-export function parse<T extends CommandSchema[], const O extends ParseOptions>(
+export function parse<T extends CommandSchema[], const O extends ParseOptions<A>, A extends ZodArray>(
   ...params: [...T, O]
   // @ts-expect-error undefined in globalOptions
-): ParseReturnType<[...T, { command: undefined; options: O['globalOptions'] }]>;
+): ParseReturnType<[...T, { command: undefined; argsType: O['argsType']; options: O['globalOptions'] }]>;
 export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<T> {
   const options = ('globalOptions' in params[params.length - 1] ? params.pop() : {}) as ParseOptions;
   const commands = params as T;
@@ -106,6 +102,7 @@ export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<
   if (options.globalOptions) {
     commands.unshift({
       command: NO_COMMAND,
+      argsType: options.argsType,
       options: options.globalOptions,
     });
   }
@@ -151,6 +148,36 @@ export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<
   return refined.safeParse(results);
 }
 
-export function createParseOptions<const T extends ParseOptions>(options: T) {
+export function createParseOptions<const T extends ParseOptions<A>, A extends ZodArray>(options: T & ParseOptions<A>) {
   return options;
+}
+
+export function formatError(error: z.ZodError) {
+  const err = error.format();
+
+  for (const key in err) {
+    const el = err[key as keyof typeof err] as { _errors: string[] } | string[];
+    if (!el) continue;
+
+    if (Array.isArray(el) && el.length) {
+      Log.error(el.join('\n'), '\n');
+      continue;
+    }
+
+    if (key === 'args' && 'args' in err && typeof err.args === 'object') {
+      for (const argKye in err.args) {
+        const argEl = err.args[argKye as keyof typeof err.args] as { _errors: string[] };
+
+        if (!argEl) continue;
+
+        if (argKye === '_errors' && '_errors' in argEl && argEl._errors.length) {
+          Log.error('args :', argEl._errors.join('\n'), '\n');
+        }
+
+        if ('_errors' in argEl && argEl._errors.length) Log.error(key, ':', argEl._errors.join('\n'), '\n');
+      }
+    }
+
+    if ('_errors' in el && el._errors.length) Log.error(key, ':', el._errors.join('\n'), '\n');
+  }
 }
