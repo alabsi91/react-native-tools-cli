@@ -34,14 +34,30 @@ if (CONSTANTS.isDev) {
   testCliArgsInput('test --name="John Doe" --age="30" arg1 arg2 arg3');
 }
 
-async function app() {
+async function main() {
   const options = Schema.createOptions({
-    cliName: 'node-cli', // The CLI name that starts your CLI, used for help command.
-    description: 'A CLI for testing.', // For help command
-    validateSchema: CONSTANTS.isDev, // Throw an error if the schema is invalid. recommended to set to false in production.
-    // Arguments type when no command is specified
+    /** The CLI name that starts your CLI, used for help command. */
+    cliName: 'node-cli',
+    /** CLI description, used for help command. */
+    description: 'A CLI for testing.',
+    /**
+     * - **Optional** `boolean`
+     * - **Default**: `true` when in development mode.
+     * - Throw an error if the schema is invalid.
+     * - Validate the schema, it's recommended to set this to `false` in production.
+     */
+    validateSchema: CONSTANTS.isDev,
+    /**
+     * **Optional** `string`
+     *
+     * - CLI usage syntax, used for help command.
+     */
     argsType: z.string().array().length(0).describe('No arguments are required or allowed.'),
-    // global options are used when no command is specified, for example: `node-cli --help`
+    /**
+     * **Optional** `CommandOptions[]`
+     *
+     * - CLI global options, when no command is given, Example: `--version`
+     */
     globalOptions: [
       {
         name: 'help',
@@ -95,4 +111,4 @@ async function app() {
   }
 }
 
-app(); // 🚀 Start the app.
+main(); // 🚀 Start the app.

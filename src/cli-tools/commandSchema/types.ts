@@ -40,9 +40,8 @@ export type AllowedOptionTypes = ZodString | ZodNumber | ZodBoolean | ZodLiteral
 export type CommandSchema<A = ZodArray> = {
   /**
    * - **Required** `string`
-   * - The command name.
+   * - The command name, use kebab-case.
    * - Make sure to not duplicate commands and aliases.
-   * - Use lower-case and kebab-case.
    *
    * @example
    *   command: 'test',
@@ -88,7 +87,7 @@ export type CommandSchema<A = ZodArray> = {
 type CommandOptions = {
   /**
    * - **Required** `string`
-   * - The name of the option.
+   * - The name of the option, use CamelCase..
    * - For example: the syntax for the option `rootPath` is `--root-path="path"`.
    * - For boolean options, the syntax is `--option` or `--option=true`.
    * - One character option names are limited to `boolean` types only E.g. `b` will be used for `-b`
@@ -113,7 +112,7 @@ type CommandOptions = {
   type: AllowedOptionTypes;
   /**
    * - **Optional** `string[]`
-   * - The aliases of the option.
+   * - The aliases of the option, use CamelCase..
    * - Any of the aliases will trigger the same option in the CLI.
    * - One character option names are limited to `boolean` types
    * - Make sure to not duplicate aliases.
@@ -175,6 +174,7 @@ export type ParseOptions<A = ZodStringArray> = {
   /**
    * - **Optional** `boolean`
    * - **Default**: `true` when in development mode.
+   * - Throw an error if the schema is invalid.
    * - Validate the schema, it's recommended to set this to `false` in production.
    */
   validateSchema?: boolean;
