@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { parse } from '@cli/commandSchema/parseSchema.js';
 import { Log } from '@cli/logger.js';
 import { CONSTANTS, testCliArgsInput } from '@cli/terminal.js';
 import testCommand from '@commands/test-command.js';
@@ -73,7 +72,7 @@ async function main() {
   });
 
   // Add all commands schemas here 👇
-  const results = parse(testCommand.schema /** , You can add more */, options);
+  const results = Schema.parse(testCommand.schema /** , You can add more */, options);
 
   // when parsing arguments fails
   if (!results.success) {

@@ -1,6 +1,6 @@
+import { Log } from '@cli/logger.js';
 import { sleep } from '@cli/terminal.js';
 import chalk from 'chalk';
-import { Log } from './logger.js';
 
 // ? 💁 See `https://github.com/sindresorhus/cli-spinners/blob/main/spinners.json` for more spinners.
 const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];

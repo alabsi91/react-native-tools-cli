@@ -1,9 +1,9 @@
 import { exec, spawn } from 'child_process';
+import { realpathSync } from 'fs';
+import path from 'path';
 import { promisify } from 'util';
 
 import type { ExecOptions, SpawnOptions } from 'child_process';
-import { realpathSync } from 'fs';
-import path from 'path';
 
 /**
  * - Spawns a shell then executes the command within that shell.
@@ -97,4 +97,4 @@ export const CONSTANTS = {
     const pattern = new RegExp(`(${suffixesToRemove.join('|')})$`);
     return path.dirname(scriptPath).replace(pattern, '');
   },
-};
+} as const;

@@ -1,10 +1,10 @@
 import inquirer from 'inquirer';
 
 export async function askForName() {
-  type answersT = { name: string };
+  type Answers = { name: string };
 
   // ❔ Ask for user input.
-  const { name } = await inquirer.prompt<answersT>([
+  const { name } = await inquirer.prompt<Answers>([
     {
       type: 'input',
       name: 'name',
@@ -17,10 +17,10 @@ export async function askForName() {
 }
 
 export async function askForAge() {
-  type answersT = { age: number };
+  type Answers = { age: number };
 
   // ❔ Ask for user input.
-  const { age } = await inquirer.prompt<answersT>([
+  const { age } = await inquirer.prompt<Answers>([
     {
       type: 'input',
       name: 'age',
