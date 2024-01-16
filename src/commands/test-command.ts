@@ -94,7 +94,10 @@ testCommand.schema = Schema.createCommand({
     },
     {
       name: 'name',
-      type: z.string().optional().describe('Your name.'),
+      type: z
+        .string({ invalid_type_error: 'must be a string E.g. --name="John"' }) // type string with a custom error
+        .optional()
+        .describe('Your name.'),
       aliases: ['yourName'],
     },
   ],
