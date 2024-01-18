@@ -27,7 +27,7 @@ export async function isReactNativeRootDir(rootPath = '') {
   if (!isPackageJsonExist) return false;
 
   const { dependencies } = JSON.parse(await readFile(packageJsonPath, 'utf8'));
-  if (!dependencies['react-native']) return false;
+  if (!dependencies?.['react-native']) return false;
 
   return true;
 }
