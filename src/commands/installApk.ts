@@ -111,6 +111,7 @@ export async function installApkCommand(deviceName?: string, variant?: 'debug' |
 installApkCommand.schema = Schema.createCommand({
   command: 'install-apk',
   description: 'Install the built APK on the connected device.',
+  aliases: ['apk-install', 'install'],
   options: [
     {
       name: 'device',

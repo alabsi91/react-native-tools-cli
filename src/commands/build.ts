@@ -85,7 +85,7 @@ async function testTsAndEslint(cwd: string) {
   Log.success('\nTypescript and Eslint checks passed.\n');
 }
 
-export async function buildCommand(operationName?: (typeof CHOICES)[number]['name'], projectPath = '') {
+export async function buildCommand(operationName?: (typeof CHOICES)[number]['name'], projectPath = '', skipChecks = false) {
   const isReactNative = await isReactNativeRootDir(projectPath);
   if (!isReactNative) {
     Log.error('\nThis script must be run in a react-native project !!\n');
@@ -95,7 +95,7 @@ export async function buildCommand(operationName?: (typeof CHOICES)[number]['nam
   const operation = operationName ? CHOICES.filter(e => e.name === operationName)[0] : await askForCommand();
 
   // eslint and typescript check
-  if (operation.isRelease) {
+  if (operation.isRelease && !skipChecks) {
     await testTsAndEslint(projectPath);
   }
 
@@ -141,6 +141,10 @@ buildCommand.schema = Schema.createCommand({
     {
       name: 'stop',
       type: z.boolean().optional().describe('Stop the Gradle daemons.'),
+    },
+    {
+      name: 'skip',
+      type: z.boolean().optional().describe('Skip Typescript and Eslint checks.'),
     },
   ],
 });

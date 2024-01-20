@@ -58,10 +58,11 @@ export async function startServerCommand(deviceName?: string, resetCache = false
 
   if (targetDevice) {
     await reverseTCP(targetDevice);
+    Log.info('\nReverse TCP on the device:', chalk.yellow(targetDevice), '\n');
   }
 
   const loading = spinner('Starting server...');
-  await start(resetCache, projectPath);
+  start(resetCache, projectPath);
   await sleep(2000);
 
   loading.success('Server started');
