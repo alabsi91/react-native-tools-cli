@@ -90,7 +90,6 @@ function parseArguments(schema: CommandSchema[]) {
     }
   }
 
-  console.log('results :', results);
   return { results, syntax };
 }
 
