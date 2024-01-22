@@ -18,15 +18,19 @@ function parseArguments(schema: CommandSchema[]) {
   const isCommandAlias = (str: string) => schema.some(command => command.aliases && command.aliases.includes(str));
   const commandAliasToCommand = (alias: string) => schema.filter(s => s.aliases && s.aliases.includes(alias))[0].command;
 
-  const isOptionAlias = (str: string) =>
-    schema.some(command => command.options && command.options.some(option => option.aliases && option.aliases.includes(str)));
+  const isOptionAlias = (command: string, str: string) => {
+    const cmd = schema.filter(c => c.command === command)[0];
+    if (!cmd || !cmd.options) return false;
+    return cmd.options.some(option => option.aliases && option.aliases.includes(str));
+  };
 
-  const optionAliasToOption = (alias: string) => {
-    for (const command of schema) {
-      if (!command.options) continue;
-      const matchingOption = command.options.find(option => option.aliases && option.aliases.includes(alias));
-      if (matchingOption) return matchingOption.name;
-    }
+  const optionAliasToOption = (command: string, alias: string) => {
+    const cmd = schema.filter(c => c.command === command)[0];
+    if (!cmd || !cmd.options) return undefined;
+
+    const matchingOption = cmd.options.find(option => option.aliases && option.aliases.includes(alias));
+    if (matchingOption) return matchingOption.name;
+
     return undefined;
   };
 
@@ -54,8 +58,8 @@ function parseArguments(schema: CommandSchema[]) {
 
     // * options
     if (key !== null) {
-      if (isOptionAlias(key)) {
-        const option = optionAliasToOption(key);
+      if (results.command && isOptionAlias(results.command, key)) {
+        const option = optionAliasToOption(results.command, key);
         if (option) results[option] = value;
         syntax.push('option');
         continue;
