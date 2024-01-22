@@ -141,7 +141,7 @@ async function app() {
   }
 
   if (data.command === 'build') {
-    const { apkDebug, apkRelease, bundleDebug, bundleRelease, clean, stop, path } = data;
+    const { apkDebug, apkRelease, bundleDebug, bundleRelease, clean, stop, path, skip } = data;
     const operation = apkRelease
       ? 'apkRelease'
       : apkDebug
@@ -156,7 +156,7 @@ async function app() {
                 ? 'stop'
                 : undefined;
 
-    await buildCommand(operation, path);
+    await buildCommand(operation, path, skip);
     return;
   }
 
