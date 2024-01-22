@@ -22,16 +22,17 @@ export function schemaIntoZodUnion<T extends CommandSchema[]>(schema: T) {
     const cmd = schema[i];
     const options: Record<string, AllowedOptionTypes> = {};
 
-    if (!cmd.options) continue;
-
-    for (let j = 0; j < cmd.options.length; j++) {
-      const option = cmd.options[j];
-      options[option.name] = option.type;
+    if (cmd.options) {
+      for (let j = 0; j < cmd.options.length; j++) {
+        const option = cmd.options[j];
+        options[option.name] = option.type;
+      }
     }
 
     // add global options
     if (cmd.command === NO_COMMAND) {
       results.push(z.object({ command: z.literal(undefined!), args: z.string().array(), ...options }).strict());
+      continue;
     }
 
     const zObject = z.object({ command: z.literal(cmd.command!), args: z.string().array(), ...options }).strict();
