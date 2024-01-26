@@ -174,7 +174,7 @@ export type ParseOptions<A = ZodStringArray> = {
   /**
    * - **Optional** `boolean`
    * - **Default**: `true` when in development mode.
-   * - Throw an error if the schema is invalid.
+   * - Throws an error if the schema is invalid.
    * - Validate the schema, it's recommended to set this to `false` in production.
    */
   validateSchema?: boolean;

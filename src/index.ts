@@ -34,6 +34,7 @@ if (CONSTANTS.isDev) {
 }
 
 async function main() {
+  // CLI parser options
   const options = Schema.createOptions({
     /** The CLI name that starts your CLI, used for help command. */
     cliName: 'node-cli',
@@ -42,14 +43,14 @@ async function main() {
     /**
      * - **Optional** `boolean`
      * - **Default**: `true` when in development mode.
-     * - Throw an error if the schema is invalid.
      * - Validate the schema, it's recommended to set this to `false` in production.
+     * - Throws an error if the schema is invalid.
      */
     validateSchema: CONSTANTS.isDev,
     /**
-     * **Optional** `string`
-     *
-     * - CLI usage syntax, used for help command.
+     * - **Optional** `z.ZodArray`
+     * - **Default** `z.string().array()`
+     * - The arguments type when no command is given.
      */
     argsType: z.string().array().length(0).describe('No arguments are required or allowed.'),
     /**
@@ -78,10 +79,10 @@ async function main() {
   if (!results.success) {
     // ? See Zod docs for more information: `https://zod.dev/?id=error-handling`
 
-    // 🖨️ print a formate error message
+    // 🖨️ print a formatted error message
     Schema.formatError(results.error);
 
-    // 🖨️ print help message on error
+    // 🖨️ print the help message on error
     Schema.printHelp();
 
     process.exit(1);
@@ -89,6 +90,7 @@ async function main() {
 
   const { command } = results.data;
 
+  // When no command is given, you will get the global options.
   if (!command) {
     const { version } = results.data;
 
