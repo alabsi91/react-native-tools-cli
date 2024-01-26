@@ -14,6 +14,7 @@ import { startServerCommand } from '@commands/startServer.js';
 import Schema from '@schema';
 import { askForCommand } from '@utils/utils.js';
 import { CONSTANTS, testCliArgsInput } from '@cli/terminal.js';
+import { changeAppVersionCommand } from '@commands/version.js';
 
 // ? 👇 title text gradient colors. for more colors see: `https://cssgradient.io/gradient-backgrounds`
 const coolGradient = gradient([
@@ -40,7 +41,7 @@ console.log(
 // ⚠️ For testing in development mode only
 if (CONSTANTS.isDev) {
   // Here you can test your CLI arguments while using hot reload in development mode.
-  testCliArgsInput('');
+  testCliArgsInput('ver --path=F:\\ReactNative\\my-daily-calories');
 }
 
 async function app() {
@@ -68,6 +69,7 @@ async function app() {
     installApkCommand.schema,
     runAndroidAppCommand.schema,
     buildCommand.schema,
+    changeAppVersionCommand.schema,
     generateAndroidFontsCommand.schema,
     generateAndroidKeyCommand.schema,
     helpSchema,
@@ -157,6 +159,12 @@ async function app() {
                 : undefined;
 
     await buildCommand(operation, path, skip);
+    return;
+  }
+
+  if (data.command === 'version') {
+    const { path, version } = data;
+    await changeAppVersionCommand(path, version);
     return;
   }
 
