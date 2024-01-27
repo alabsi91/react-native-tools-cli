@@ -72,15 +72,15 @@ const outFolder = 'installer',
         continue;
       }
 
-      await recursiveCopy(path.normalize(asset), path.join(outFolder, asset));
+      await recursiveCopy(path.normalize(asset), path.join(outFolder, path.basename(asset)));
 
       const isDirectory = (await fs.stat(asset)).isDirectory();
       if (isDirectory) {
-        includeAssetsNsisString += `  File /r "${path.basename(asset)}"\n`;
+        includeAssetsNsisString += `\n  File /r "${path.basename(asset)}"`;
         continue;
       }
 
-      includeAssetsNsisString += `  File "${path.basename(asset)}"\n`;
+      includeAssetsNsisString += `\n  File "${path.basename(asset)}"`;
     }
 
     progress('- Included assets copied successfully!');
@@ -98,9 +98,12 @@ const outFolder = 'installer',
       outdir: outFolder,
       platform: 'node',
       target: ['node16'],
+      format: 'cjs',
       outExtension: { '.js': '.cjs' },
       bundle: true,
       minify: true,
+      define: { 'import.meta.url': 'import_meta_url' },
+      banner: { js: "var import_meta_url = require('url').pathToFileURL(__filename);" },
       treeShaking: true,
     });
     progress('- JavaScript files Bundled successfully!');
@@ -149,7 +152,7 @@ const outFolder = 'installer',
       .replace('!define AppDescription ""', `!define AppDescription "${description}"`) // inject AppDescription
       .replace('!define JsFile ""', `!define JsFile "${outJsFile}"`) // inject JsFile name
       .replace('Section "Node.js"', `Section "node.js v${nodeVersion}"`) // inject Node.js version
-      .replace(/\s\s;\s{assetsFiles}.+/, includeAssetsNsisString); // inject included assets
+      .replace(/\s*;\s*{assetsFiles}.*/, includeAssetsNsisString); // inject included assets
     // remove Node.js component if not included in the installer.
     if (!includeNodejs) {
       newInstallerNsi = newInstallerNsi

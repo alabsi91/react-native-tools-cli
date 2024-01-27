@@ -14,7 +14,7 @@
     "start:dev": "node scripts/start-dev.js",
     "test": "tsc --noEmit && eslint src --max-warnings 0",
     "build:js": "tsc && resolve-tspaths",
-    "build:bundle": "esbuild src/index.ts --bundle --platform=node --target=node16 --outdir=bundle --out-extension:.js=.cjs --minify --tree-shaking=true",
+    "build:bundle": "esbuild src/index.ts --bundle --platform=node --target=node16 --format=cjs --banner:js=\"var import_meta_url = require('url').pathToFileURL(__filename);\" --define:import.meta.url=import_meta_url --outfile=bundle/index.cjs --minify --tree-shaking=true",
     "build:nsis": "node --no-warnings scripts/build-installer.js",
     "serve:build": "node dist/index.js",
     "serve:bundle": "node bundle/index.cjs",
