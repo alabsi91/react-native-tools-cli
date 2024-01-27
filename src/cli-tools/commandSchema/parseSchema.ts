@@ -61,8 +61,9 @@ function parseArguments(schema: CommandSchema[]) {
     if (key !== null) {
       if (value === null) continue;
 
-      if (results.command && isOptionAlias(results.command, key)) {
-        const option = optionAliasToOption(results.command, key);
+      const searchInCommand = results.command ?? NO_COMMAND;
+      if (isOptionAlias(searchInCommand, key)) {
+        const option = optionAliasToOption(searchInCommand, key);
         if (option) results[option] = value;
         syntax.push('option');
         continue;
