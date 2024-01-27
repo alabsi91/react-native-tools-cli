@@ -19,11 +19,13 @@ const outFolder = 'installer',
   nodeVersion = 'latest-v18.x',
   nodeDownloadLink = `https://nodejs.org/dist/${nodeVersion}/win-x64/node.exe`,
   makeNsis = path.normalize('C:/Program Files (x86)/NSIS/makensis.exe'), // NSIS cli path.
+  includeAssets = [], // files or folders to be included in the installer.
   includeNodejs = false, // include nodejs in the installer. makes the installer larger in size.
   cleanAfterBuild = false; // 🗑️ remove all files after build except `installer.exe`
 
 (async function () {
   let progress;
+  let includeAssetsNsisString = '';
 
   // * 👓 read package.json
   const { name, version, description } = JSON.parse(await fs.readFile('package.json'));
@@ -54,12 +56,37 @@ const outFolder = 'installer',
 
   // * 📋 copy files from scripts folder
   try {
-    progress = loading(`- Copying assets files to "${outFolder}" folder ...`);
-    for (const file of await fs.readdir(path.normalize('scripts/installer-assets')))
-      await fs.copyFile(path.normalize(`scripts/installer-assets/${file}`), path.normalize(`${outFolder}/${file}`));
-    progress('- Assets files copied successfully!');
+    progress = loading(`- Copying installer scripts files to "${outFolder}" folder ...`);
+    await recursiveCopy(path.normalize('scripts/installer-assets/'), path.normalize(outFolder));
+    progress('- Files copied successfully!');
   } catch (error) {
-    progress('Error: copying assets files failed!', true);
+    progress('Error: copying scripts files failed!', true);
+  }
+
+  // * 📋 copy included assets
+  try {
+    progress = loading(`- Copying included assets to "${outFolder}" folder ...`);
+    for (const asset of includeAssets) {
+      if (!existsSync(asset)) {
+        console.log(chalk.red(`Error: path "${asset}" not found!`));
+        continue;
+      }
+
+      await recursiveCopy(path.normalize(asset), path.join(outFolder, asset));
+
+      const isDirectory = (await fs.stat(asset)).isDirectory();
+      if (isDirectory) {
+        includeAssetsNsisString += `  File /r "${path.basename(asset)}"\n`;
+        continue;
+      }
+
+      includeAssetsNsisString += `  File "${path.basename(asset)}"\n`;
+    }
+
+    progress('- Included assets copied successfully!');
+  } catch (error) {
+    console.log('error :', error);
+    progress('- Error: copying include files failed!', true);
     return;
   }
 
@@ -121,7 +148,8 @@ const outFolder = 'installer',
       .replace('!define AppVersion ""', `!define AppVersion "v${version}"`) // inject AppVersion
       .replace('!define AppDescription ""', `!define AppDescription "${description}"`) // inject AppDescription
       .replace('!define JsFile ""', `!define JsFile "${outJsFile}"`) // inject JsFile name
-      .replace('Section "Node.js"', `Section "node.js v${nodeVersion}"`); // inject Node.js version
+      .replace('Section "Node.js"', `Section "node.js v${nodeVersion}"`) // inject Node.js version
+      .replace(/\s\s;\s{assetsFiles}.+/, includeAssetsNsisString); // inject included assets
     // remove Node.js component if not included in the installer.
     if (!includeNodejs) {
       newInstallerNsi = newInstallerNsi
@@ -173,4 +201,22 @@ function loading(message) {
     process.stdout.cursorTo(0);
     process.stdout.write(`${isError ? chalk.red('⛔ ' + endMessage) : chalk.green('✅ ' + endMessage)}\n`);
   };
+}
+
+async function recursiveCopy(source, target) {
+  const sourceStats = await fs.stat(source);
+
+  if (sourceStats.isDirectory()) {
+    await fs.mkdir(target, { recursive: true });
+    const files = await fs.readdir(source);
+
+    for (const file of files) {
+      const sourcePath = path.join(source, file);
+      const targetPath = path.join(target, file);
+
+      await recursiveCopy(sourcePath, targetPath, false);
+    }
+  } else if (sourceStats.isFile()) {
+    await fs.copyFile(source, target);
+  }
 }
