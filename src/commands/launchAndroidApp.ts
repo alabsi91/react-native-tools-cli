@@ -68,7 +68,7 @@ export async function runAndroidAppCommand(deviceName?: string, projectPath = ''
     }
   }
 
-  const packageName = await getPackageName(projectPath);
+  const packageName = getPackageName(projectPath);
 
   try {
     console.log(

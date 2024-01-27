@@ -21,7 +21,7 @@ async function askToChooseVariant() {
     {
       type: 'list',
       name: 'variant',
-      message: 'Choose a device :',
+      message: 'Choose a variant :',
       choices: ['debug', 'release'],
     },
   ]);

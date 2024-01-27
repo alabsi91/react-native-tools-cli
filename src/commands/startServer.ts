@@ -16,7 +16,7 @@ import { z } from 'zod';
 const newTerminal = process.platform.startsWith('win') ? 'start ' : '';
 
 function start(resetCache: boolean, cwd: string) {
-  $`${newTerminal} npx react-native start ${resetCache ? '--reset-cache' : ''}${{ cwd }}`;
+  return $`${newTerminal} npx react-native start ${resetCache ? '--reset-cache' : ''}${{ cwd }}`;
 }
 
 export async function startServerCommand(deviceName?: string, resetCache = false, projectPath = '') {

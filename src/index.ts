@@ -41,7 +41,7 @@ console.log(
 // ⚠️ For testing in development mode only
 if (CONSTANTS.isDev) {
   // Here you can test your CLI arguments while using hot reload in development mode.
-  testCliArgsInput('ver --path=F:\\ReactNative\\my-daily-calories');
+  testCliArgsInput('');
 }
 
 async function app() {
@@ -177,7 +177,6 @@ async function app() {
   if (data.command === 'generate-key') {
     const { path } = data;
     await generateAndroidKeyCommand(path);
-    return;
   }
 }
 

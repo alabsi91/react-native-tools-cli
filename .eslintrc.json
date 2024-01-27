@@ -8,13 +8,21 @@
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",
+    "project": "tsconfig.json",
     "sourceType": "module"
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
+    "quotes": [1, "single", { "avoidEscape": true, "allowTemplateLiterals": false }],
     "object-shorthand": 1,
     "require-await": 1,
-    "@typescript-eslint/consistent-type-imports": "error",
+    "@typescript-eslint/consistent-type-imports": 2,
+    "@typescript-eslint/no-namespace": 0,
+    "@typescript-eslint/await-thenable": 1,
+    "no-useless-escape": 1,
+    "no-useless-return": 1,
+    "no-useless-call": 1,
+    "no-unused-expressions": 1,
     "prettier/prettier": 1
   }
 }
