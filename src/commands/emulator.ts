@@ -68,9 +68,9 @@ export async function emulatorCommand(emulatorName?: string) {
   if (devices.length > 1) {
     Log.warn('\nFound more than 1 device\n');
     targetEmulator = await askToChooseDevice(devices);
+  } else {
+    targetEmulator = devices[0];
   }
-
-  targetEmulator = devices[0];
 
   Log.info('\n🚀 Opening', chalk.yellow(targetEmulator), 'emulator ...\n');
 
