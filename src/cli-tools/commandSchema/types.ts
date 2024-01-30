@@ -200,7 +200,9 @@ export type ParseOptions<A = ZodStringArray> = {
 
 export type PrintHelpOptions<T = undefined> = {
   /** Print only the specified commands */
-  printCommands?: NonNullable<T extends { data: Partial<{ command: string }> } ? T['data']['command'] : string>[];
+  printCommands?: (T extends { schemas: Partial<{ command: string }>[] }
+    ? NonNullable<T['schemas'][number]['command']>
+    : string)[];
   /** Whether to print the CLI description */
   description?: boolean;
   /** Whether to print the CLI usage */
@@ -212,4 +214,4 @@ export type PrintHelpOptions<T = undefined> = {
 export type ParseReturnType<T extends CommandSchema[]> = z.SafeParseReturnType<
   z.input<[SchemaToZodObjArr<T>[number], SchemaToZodObjArr<T>[number], ...SchemaToZodObjArr<T>][number]>,
   z.output<[SchemaToZodObjArr<T>[number], SchemaToZodObjArr<T>[number], ...SchemaToZodObjArr<T>][number]>
->;
+> & { schemas: T };

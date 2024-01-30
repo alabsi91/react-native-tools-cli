@@ -155,7 +155,7 @@ export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<
     }
   });
 
-  return refined.safeParse(results);
+  return { ...refined.safeParse(results), schemas: commands };
 }
 
 export function createParseOptions<const T extends ParseOptions<A>, A extends ZodArray>(options: T & ParseOptions<A>): T {
