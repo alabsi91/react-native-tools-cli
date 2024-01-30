@@ -6,7 +6,7 @@ import { schemaIntoZodUnion } from './commandSchema.js';
 import { commandsSchemaToHelpSchema, printHelpFromSchema } from './helpSchema.js';
 import { validateDevInput } from './validate.js';
 
-import type { CommandSchema, ParseOptions, ParseReturnType, ZodArray } from './types.js';
+import type { CommandSchema, ParseOptions, ParseReturnType, PrintHelpOptions, ZodArray } from './types.js';
 
 export const NO_COMMAND = 'noCommandIsProvided';
 
@@ -91,9 +91,15 @@ function parseArguments(schema: CommandSchema[]) {
   return { results, syntax };
 }
 
-export let printHelp = () => {
-  Log.warn('Help is not implemented yet');
-};
+let HelpSchema: ReturnType<typeof commandsSchemaToHelpSchema>;
+export function printHelp<T extends ReturnType<typeof parse> | undefined = undefined>(options?: PrintHelpOptions<T>) {
+  if (!HelpSchema) {
+    Log.warn('Help is not implemented yet');
+    return;
+  }
+
+  printHelpFromSchema(HelpSchema, options as PrintHelpOptions);
+}
 
 export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<T>;
 export function parse<T extends CommandSchema[], const O extends ParseOptions<A>, const A extends ZodArray>(
@@ -125,8 +131,7 @@ export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<
   const zodUnion = schemaIntoZodUnion(commands);
   const { results, syntax } = parseArguments(commands);
 
-  const HelpSchema = commandsSchemaToHelpSchema(commands, options.cliName, options.description, options.usage);
-  printHelp = () => printHelpFromSchema(HelpSchema);
+  HelpSchema = commandsSchemaToHelpSchema(commands, options.cliName, options.description, options.usage);
 
   const refined = zodUnion.superRefine((_, ctx) => {
     // The first argument is not a command

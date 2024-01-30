@@ -100,5 +100,10 @@ testCommand.schema = Schema.createCommand({
         .describe('Your name.'),
       aliases: ['yourName'],
     },
+    {
+      name: 'help',
+      type: z.boolean().optional().describe('Prints a help message for this command.'),
+      aliases: ['h'],
+    },
   ],
 });

@@ -104,7 +104,18 @@ async function main() {
   }
 
   if (command === 'test') {
-    const { age, name, args } = results.data;
+    const { age, name, args, help } = results.data;
+
+    if (help) {
+      // Customize your help message here
+      Schema.printHelp<typeof results>({
+        printCommands: ['test'], // Print only the specified commands
+        description: false, // Do not print the CLI description section
+        usage: false, // Do not print the CLI usage section
+        globalOptions: false, // Do not print the global options section
+      });
+      return;
+    }
 
     await testCommand(name, age);
 

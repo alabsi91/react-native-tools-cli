@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { NO_COMMAND } from './parseSchema.js';
 
-import type { AllowedOptionTypes, CommandSchema } from './types.js';
+import type { AllowedOptionTypes, CommandSchema, PrintHelpOptions } from './types.js';
 
 export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: string, cliDescription?: string, usage?: string) {
   const getType = (item: AllowedOptionTypes) => {
@@ -70,7 +70,11 @@ export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: st
   };
 }
 
-export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHelpSchema>) {
+export function printHelpFromSchema(
+  schema: ReturnType<typeof commandsSchemaToHelpSchema>,
+  { printCommands, description = true, usage = true, globalOptions = true }: PrintHelpOptions = {},
+) {
+  /** Colors */
   const c = {
     title: chalk.bold.blue.inverse,
     aliasesTitle: chalk.hex('#E91E63'),
@@ -84,6 +88,17 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
     dim: chalk.white.dim,
   };
 
+  // Get longest indents
+  const longestCommandName = Math.max(...schema.commands.map(command => command.name?.length ?? 0));
+  const longestGlobalSyntax = Math.max(...schema.global.options.map(option => option?.syntax?.length ?? 0));
+  const longestSyntax = Math.max(
+    ...schema.commands.map(command =>
+      command.options ? Math.max(...command.options.map(option => option.syntax?.length ?? 0), 0) : 0,
+    ),
+  );
+  const longest = Math.max(longestCommandName, longestGlobalSyntax, longestSyntax);
+
+  /** Add colors for the options syntax prop. E.g. --output="string" */
   const formatSyntax = (syntax: string) => {
     if (syntax.includes('=')) {
       const [part1, part2] = syntax.split('=');
@@ -94,95 +109,33 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
 
   /** New line */
   const nl = (count: number) => '\n'.repeat(count);
+
   /** Space */
   const indent = (count: number) => ' '.repeat(count);
 
-  const longestCommandName = Math.max(...schema.commands.map(command => command.name?.length ?? 0));
-  const longestGlobalSyntax = Math.max(...schema.global.options.map(option => option?.syntax?.length ?? 0));
-  const longestSyntax = Math.max(
-    ...schema.commands.map(command =>
-      command.options ? Math.max(...command.options.map(option => option.syntax?.length ?? 0), 0) : 0,
-    ),
-  );
-  const longest = Math.max(longestCommandName, longestGlobalSyntax, longestSyntax);
+  /** Print a styled title */
+  const printTitle = (title: string) => {
+    console.log(c.title(` ${title} `));
+  };
 
-  // * CLI Description
-  if (schema.description) {
-    console.log(c.title(' Description '), nl(1));
-    console.log(indent(2), c.dim('-'), c.description(schema.description), nl(1));
-  }
-
-  // * CLI Usage
-  const usage = schema.usage ?? schema.name + c.command(' <command>') + c.options(' [options]') + c.args(' [args]');
-  console.log(c.title(' Usage '), nl(1));
-  console.log(indent(2), c.dim('$'), usage, nl(1));
-
-  // * Commands
-  if (schema.commands.length) {
-    console.log(c.title(' Commands '));
-
-    for (let i = 0; i < schema.commands.length; i++) {
-      const { name, description, aliases, argsDescription, options } = schema.commands[i];
-      if (!name) continue;
-
-      // Command
-      console.log(
-        nl(1),
-        c.dim('#'),
-        c.command(name),
-        description ? indent(longest + 6 - name.length) + c.dim('• ') + description : '',
-      );
-
-      // Command Aliases
-      if (aliases) {
-        console.log(indent(longest + 9), c.aliasesTitle('Aliases  '), c.alias(aliases.join(c.dim(', '))));
-      }
-
-      // Command Arguments Description
-      if (argsDescription) {
-        console.log(indent(longest + 9), c.args('Arguments'), c.dim('•'), c.description(argsDescription));
-      }
-
-      if (!options) continue;
-
-      // Command Options
-      for (let o = 0; o < options.length; o++) {
-        const { syntax, isOptional, description, aliases } = options[o];
-        console.log(
-          nl(1),
-          indent(2),
-          formatSyntax(syntax),
-          indent(longest + 4 - syntax.length),
-          c.optional(isOptional ? 'optional ' : 'required '),
-          description ? c.dim('• ') + description : '',
-        );
-
-        // Options Aliases
-        if (aliases) {
-          console.log(indent(longest + 9), c.aliasesTitle('Aliases  '), c.alias(aliases.join(c.dim(', '))));
-        }
-      }
+  /** Print CLI description */
+  const printCliDescription = () => {
+    if (schema.description) {
+      printTitle('Description');
+      console.log(nl(1), indent(2), c.dim('-'), c.description(schema.description), nl(1));
     }
-  }
+  };
 
-  console.log('');
+  /** Print CLI usage */
+  const printCliUsage = () => {
+    const usage = schema.usage ?? schema.name + c.command(' <command>') + c.options(' [options]') + c.args(' [args]');
+    printTitle('Usage');
+    console.log(nl(1), indent(2), c.dim('$'), usage, nl(1));
+  };
 
-  const globalOptions = schema.global.options;
-
-  if (globalOptions.length === 0) return;
-
-  // * Global
-  console.log(c.title(' Global '));
-
-  // Global Arguments Description
-  if (schema.global.argsDescription) {
-    console.log(nl(1), indent(2), c.args.bold('Arguments:'), indent(longest - 6), c.dim('•'), schema.global.argsDescription);
-  }
-
-  // Global Options
-  for (let i = 0; i < globalOptions.length; i++) {
-    const { syntax, isOptional, description, aliases } = globalOptions[i];
-
+  /** Print an option */
+  const printOption = (option: { syntax: string; isOptional: boolean; description?: string; aliases?: string[] }) => {
+    const { syntax, isOptional, description, aliases } = option;
     console.log(
       nl(1),
       indent(2),
@@ -196,7 +149,74 @@ export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHe
     if (aliases) {
       console.log(indent(longest + 9), c.aliasesTitle('Aliases  '), c.alias(aliases.join(c.dim(', '))));
     }
+  };
+
+  const printCommand = (command: { name?: string; description?: string; aliases?: string[]; argsDescription?: string }) => {
+    const { name, description, aliases, argsDescription } = command;
+    if (!name) return;
+
+    // Command
+    console.log(
+      nl(1),
+      c.dim('#'),
+      c.command(name),
+      description ? indent(longest + 6 - name.length) + c.dim('• ') + description : '',
+    );
+
+    // Command Aliases
+    if (aliases) {
+      console.log(indent(longest + 9), c.aliasesTitle('Aliases  '), c.alias(aliases.join(c.dim(', '))));
+    }
+
+    // Command Arguments Description
+    if (argsDescription) {
+      console.log(indent(longest + 9), c.args('Arguments'), c.dim('•'), c.description(argsDescription));
+    }
+  };
+
+  // * CLI Description
+  if (description) printCliDescription();
+
+  // * CLI Usage
+  if (usage) printCliUsage();
+
+  // * Commands
+  if ((schema.commands.length && !Array.isArray(printCommands)) || (Array.isArray(printCommands) && printCommands.length)) {
+    printTitle('Commands');
+
+    for (let i = 0; i < schema.commands.length; i++) {
+      const { name, description, aliases, argsDescription, options } = schema.commands[i];
+
+      // Print only the specified command
+      if (Array.isArray(printCommands) && !printCommands.includes(name)) continue;
+
+      // Command
+      printCommand({ name, description, aliases, argsDescription });
+
+      // Command Options
+      if (!options) continue;
+      for (let o = 0; o < options.length; o++) printOption(options[o]);
+    }
   }
+
+  console.log('');
+
+  if (!globalOptions) return;
+
+  const CliGlobalOptions = schema.global.options;
+
+  if (CliGlobalOptions.length === 0) return;
+
+  // * Global
+  printTitle('Global');
+
+  // Global Arguments Description
+  if (schema.global.argsDescription) {
+    console.log(nl(1), indent(2), c.args.bold('Arguments:'), indent(longest - 6), c.dim('•'), schema.global.argsDescription);
+  }
+
+  // Global Options
+  for (let i = 0; i < CliGlobalOptions.length; i++) printOption(CliGlobalOptions[i]);
 
   console.log('');
 }

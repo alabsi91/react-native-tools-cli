@@ -1,5 +1,5 @@
 import { createCommandSchema } from './commandSchema.js';
-import { createParseOptions, parse, printHelp, formatError } from './parseSchema.js';
+import { createParseOptions, formatError, parse, printHelp } from './parseSchema.js';
 
 const Schema = {
   /**
@@ -25,6 +25,7 @@ const Schema = {
    *   });
    */
   createCommand: createCommandSchema,
+
   /**
    * - Create options schema, that can be used in the parse function
    * - `Schema.parse(schema, ...schema, options)`
@@ -57,6 +58,7 @@ const Schema = {
    *   });
    */
   createOptions: createParseOptions,
+
   /**
    * - Parse the arguments and return the results
    * - `Schema.parse(schema, ...schema, options)`
@@ -72,11 +74,12 @@ const Schema = {
    *   }
    */
   parse,
+
   /**
    * - Print the help message that was generated when calling `Schema.parse(schema, ...schema, options)`
    * - If the help message is not generated, it will print a warning.
    */
-  printHelp: () => printHelp(),
+  printHelp,
 
   /** - Takes a Zod error object and prints a formatted error message. */
   formatError,
