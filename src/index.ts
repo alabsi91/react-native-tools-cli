@@ -30,7 +30,7 @@ console.log(
 // ⚠️ For testing in development mode only
 if (CONSTANTS.isDev) {
   // Here you can test your CLI arguments while using hot reload in development mode.
-  testCliArgsInput('test --name="John Doe" --age="30" arg1 arg2 arg3');
+  testCliArgsInput('-h');
 }
 
 async function main() {
@@ -109,10 +109,16 @@ async function main() {
     if (help) {
       // Customize your help message here
       Schema.printHelp<typeof results>({
-        printCommands: ['test'], // Print only the specified commands
-        description: false, // Do not print the CLI description section
-        usage: false, // Do not print the CLI usage section
-        globalOptions: false, // Do not print the global options section
+        includeCommands: ['test'],
+        includeDescription: false,
+        includeUsage: false,
+        includeGlobalOptions: false,
+        includeOptionAliases: false,
+        includeCommandAliases: false,
+        includeCommandArguments: false,
+        showOptionalKeyword: false,
+        showRequiredKeyword: false,
+        includeOptionsType: false,
       });
       return;
     }

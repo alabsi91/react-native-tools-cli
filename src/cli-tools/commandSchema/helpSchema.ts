@@ -72,7 +72,19 @@ export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: st
 
 export function printHelpFromSchema(
   schema: ReturnType<typeof commandsSchemaToHelpSchema>,
-  { printCommands, description = true, usage = true, globalOptions = true }: PrintHelpOptions = {},
+  {
+    includeCommands,
+    includeDescription = true,
+    includeUsage = true,
+    includeGlobalOptions = true,
+    includeOptionAliases = true,
+    includeCommandAliases = true,
+    includeCommandArguments = true,
+    includeGlobalArguments = true,
+    showOptionalKeyword = true,
+    showRequiredKeyword = true,
+    includeOptionsType = true,
+  }: PrintHelpOptions = {},
 ) {
   /** Colors */
   const c = {
@@ -102,6 +114,7 @@ export function printHelpFromSchema(
   const formatSyntax = (syntax: string) => {
     if (syntax.includes('=')) {
       const [part1, part2] = syntax.split('=');
+      if (!includeOptionsType) return c.options(part1, indent(part2.length)); // don't show type
       return c.options(part1) + chalk.reset('=') + c.value(part2.replace(/"/g, c.dim('"')));
     }
     return c.options(syntax);
@@ -141,12 +154,12 @@ export function printHelpFromSchema(
       indent(2),
       formatSyntax(syntax),
       indent(longest + 4 - syntax.length),
-      c.optional(isOptional ? 'optional ' : 'required '),
-      description ? c.dim('• ') + description : '',
+      c.optional(isOptional && showOptionalKeyword ? 'optional ' : !isOptional && showRequiredKeyword ? 'required ' : '') +
+        (description ? c.dim('• ') + description : ''),
     );
 
     // Options Aliases
-    if (aliases) {
+    if (aliases && aliases.length && includeOptionAliases) {
       console.log(indent(longest + 9), c.aliasesTitle('Aliases  '), c.alias(aliases.join(c.dim(', '))));
     }
   };
@@ -164,31 +177,31 @@ export function printHelpFromSchema(
     );
 
     // Command Aliases
-    if (aliases) {
+    if (aliases && aliases.length && includeCommandAliases) {
       console.log(indent(longest + 9), c.aliasesTitle('Aliases  '), c.alias(aliases.join(c.dim(', '))));
     }
 
     // Command Arguments Description
-    if (argsDescription) {
+    if (argsDescription && includeCommandArguments) {
       console.log(indent(longest + 9), c.args('Arguments'), c.dim('•'), c.description(argsDescription));
     }
   };
 
   // * CLI Description
-  if (description) printCliDescription();
+  if (includeDescription) printCliDescription();
 
   // * CLI Usage
-  if (usage) printCliUsage();
+  if (includeUsage) printCliUsage();
 
   // * Commands
-  if ((schema.commands.length && !Array.isArray(printCommands)) || (Array.isArray(printCommands) && printCommands.length)) {
+  if ((schema.commands.length && !Array.isArray(includeCommands)) || (Array.isArray(includeCommands) && includeCommands.length)) {
     printTitle('Commands');
 
     for (let i = 0; i < schema.commands.length; i++) {
       const { name, description, aliases, argsDescription, options } = schema.commands[i];
 
       // Print only the specified command
-      if (Array.isArray(printCommands) && !printCommands.includes(name)) continue;
+      if (Array.isArray(includeCommands) && !includeCommands.includes(name)) continue;
 
       // Command
       printCommand({ name, description, aliases, argsDescription });
@@ -201,7 +214,7 @@ export function printHelpFromSchema(
 
   console.log('');
 
-  if (!globalOptions) return;
+  if (!includeGlobalOptions) return;
 
   const CliGlobalOptions = schema.global.options;
 
@@ -211,7 +224,7 @@ export function printHelpFromSchema(
   printTitle('Global');
 
   // Global Arguments Description
-  if (schema.global.argsDescription) {
+  if (schema.global.argsDescription && includeGlobalArguments) {
     console.log(nl(1), indent(2), c.args.bold('Arguments:'), indent(longest - 6), c.dim('•'), schema.global.argsDescription);
   }
 

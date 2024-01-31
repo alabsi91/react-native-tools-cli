@@ -199,16 +199,40 @@ export type ParseOptions<A = ZodStringArray> = {
 };
 
 export type PrintHelpOptions<T = undefined> = {
-  /** Print only the specified commands */
-  printCommands?: (T extends { schemas: Partial<{ command: string }>[] }
+  /** Print only the specified command names */
+  includeCommands?: (T extends { schemas: Partial<{ command: string }>[] }
     ? NonNullable<T['schemas'][number]['command']>
     : string)[];
-  /** Whether to print the CLI description */
-  description?: boolean;
-  /** Whether to print the CLI usage */
-  usage?: boolean;
-  /** Whether to print the global options */
-  globalOptions?: boolean;
+
+  /** Whether to include the CLI description in the help message */
+  includeDescription?: boolean;
+
+  /** Whether to display the CLI usage information in the help message */
+  includeUsage?: boolean;
+
+  /** Whether to include global options in the help message */
+  includeGlobalOptions?: boolean;
+
+  /** Whether to display option aliases in the help message */
+  includeOptionAliases?: boolean;
+
+  /** Whether to include command aliases in the help message */
+  includeCommandAliases?: boolean;
+
+  /** Whether to include command arguments in the help message */
+  includeCommandArguments?: boolean;
+
+  /** Whether to include global arguments in the help message */
+  includeGlobalArguments?: boolean;
+
+  /** Whether to show the optional keyword when the option is optional */
+  showOptionalKeyword?: boolean;
+
+  /** Whether to show the required keyword when the option is required */
+  showRequiredKeyword?: boolean;
+
+  /** Whether to include the options type information in the help message */
+  includeOptionsType?: boolean;
 };
 
 export type ParseReturnType<T extends CommandSchema[]> = z.SafeParseReturnType<
