@@ -90,7 +90,7 @@ testCommand.schema = Schema.createCommand({
        * - One character option names are limited to `boolean` types
        * - Make sure to not duplicate aliases.
        */
-      aliases: ['yourAge'],
+      aliases: ['yourAge', 'yourage'],
     },
     {
       name: 'name',
@@ -98,7 +98,7 @@ testCommand.schema = Schema.createCommand({
         .string({ invalid_type_error: 'must be a string E.g. --name="John"' }) // type string with a custom error
         .optional()
         .describe('Your name.'),
-      aliases: ['yourName'],
+      aliases: ['yourName', 'yourname'],
     },
     {
       name: 'help',

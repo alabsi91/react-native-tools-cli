@@ -46,7 +46,18 @@ function parseArguments(schema: CommandSchema[]) {
   const results: { command?: string; args: string[]; [key: string]: unknown } = { args: [] };
   const syntax: ('command' | 'option' | 'arg')[] = [];
 
-  for (const str of process.argv.slice(2)) {
+  // Convert -hv to -h -v
+  const args = process.argv.slice(2).flatMap(a => {
+    if (/^-\w{1,}$$/i.test(a)) {
+      return a
+        .split('')
+        .filter(c => c !== '-')
+        .map(c => `-${c}`);
+    }
+    return a;
+  });
+
+  for (const str of args) {
     const key = parseKey(str),
       boolean = toBoolean(str),
       number = toNumber(str),
