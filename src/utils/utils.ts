@@ -1,32 +1,27 @@
 import inquirer from 'inquirer';
 
-export async function askForName() {
-  type Answers = { name: string };
-
-  // ❔ Ask for user input.
-  const { name } = await inquirer.prompt<Answers>([
+export async function askForStringInput(message: string, defaultValue?: string) {
+  const { answer } = await inquirer.prompt<{ answer: string }>([
     {
       type: 'input',
-      name: 'name',
-      default: 'John Doe',
-      message: 'Enter your name :',
+      name: 'answer',
+      default: defaultValue,
+      message,
     },
   ]);
 
-  return name;
+  return answer;
 }
 
-export async function askForAge() {
-  type Answers = { age: number };
-
-  // ❔ Ask for user input.
-  const { age } = await inquirer.prompt<Answers>([
+export async function askToConfirm(message: string, defaultValue?: boolean) {
+  const { confirm } = await inquirer.prompt<{ confirm: boolean }>([
     {
-      type: 'input',
-      name: 'age',
-      message: 'Enter your age :',
+      type: 'confirm',
+      name: 'confirm',
+      default: defaultValue,
+      message,
     },
   ]);
 
-  return age;
+  return confirm;
 }
