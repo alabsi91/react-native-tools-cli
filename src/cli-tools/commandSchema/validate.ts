@@ -18,7 +18,7 @@ function checkForDuplicates(arr: (string | undefined)[]) {
  * - This function is used to validate the command schema before it is used in the CLI.
  */
 export function validateDevInput(schema: CommandSchema[]) {
-  const testCommandRe = /^[a-z]+-?[a-z]+$/i;
+  const testCommandRe = /^[a-z-0-9]+(?:-?[a-z-0-9])+$/i;
   const testCommandStr = (arr: (string | undefined)[]) => arr.findIndex(c => c && !testCommandRe.test(c));
 
   const testOptionRe = /^(?:[a-z]+(?:[A-Z][a-z]*)*|[a-z])$/;
