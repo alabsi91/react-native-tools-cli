@@ -55,6 +55,12 @@ export type CommandSchema<A = ZodArray> = {
    */
   description?: string;
   /**
+   * - **Optional** `string`
+   * - The example of the command.
+   * - Used for generating the help message.
+   */
+  example?: string;
+  /**
    * - **Optional** `z.ZodArray`
    * - **Default** `z.string().array()`
    * - The arguments of the command.
@@ -75,7 +81,6 @@ export type CommandSchema<A = ZodArray> = {
    * - Make sure to not duplicate aliases and commands.
    */
   aliases?: string[];
-
   /**
    * - **Optional** `CommandOptions[]`
    * - The options of the command.
@@ -110,6 +115,12 @@ type CommandOptions = {
    * @see https://zod.dev/?id=types
    */
   type: AllowedOptionTypes;
+  /**
+   * - **Optional** `string`
+   * - The example of the option.
+   * - Used for generating the help message.
+   */
+  example?: string;
   /**
    * - **Optional** `string[]`
    * - The aliases of the option, use CamelCase..
@@ -216,8 +227,14 @@ export type PrintHelpOptions<T = undefined> = {
   /** Whether to display option aliases in the help message */
   includeOptionAliases?: boolean;
 
+  /** Whether to include option examples in the help message */
+  includeOptionExample?: boolean;
+
   /** Whether to include command aliases in the help message */
   includeCommandAliases?: boolean;
+
+  /** Whether to include command examples in the help message */
+  includeCommandExample?: boolean;
 
   /** Whether to include command arguments in the help message */
   includeCommandArguments?: boolean;
