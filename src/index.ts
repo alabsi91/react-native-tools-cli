@@ -36,32 +36,15 @@ if (CONSTANTS.isDev) {
 async function main() {
   // CLI parser options
   const options = Schema.createOptions({
-    /** The CLI name that starts your CLI, used for help command. */
     cliName: 'node-cli',
-    /** CLI description, used for help command. */
     description: 'A CLI for testing.',
-    /**
-     * - **Optional** `boolean`
-     * - **Default**: `true` when in development mode.
-     * - Validate the schema, it's recommended to set this to `false` in production.
-     * - Throws an error if the schema is invalid.
-     */
     validateSchema: CONSTANTS.isDev,
-    /**
-     * - **Optional** `z.ZodArray`
-     * - **Default** `z.string().array()`
-     * - The arguments type when no command is given.
-     */
     argsType: z.string().array().length(0).describe('No arguments are required or allowed.'),
-    /**
-     * **Optional** `CommandOptions[]`
-     *
-     * - CLI global options, when no command is given, Example: `--version`
-     */
     globalOptions: [
       {
         name: 'help',
         type: z.boolean().optional().describe('Show this help message.'),
+        example: '--help or -h',
         aliases: ['h'],
       },
       {
