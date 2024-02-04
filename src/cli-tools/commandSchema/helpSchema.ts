@@ -85,8 +85,8 @@ const ln = (count: number) => '\n'.repeat(count);
 /** Space */
 const indent = (count: number) => ' '.repeat(count);
 
-/** Split new line and add indent */
-const splitNewLine = (message: string, indent: string = '') => message.replace(/\n/g, `\n${indent}`);
+/** Add indent before each new line */
+const addIndentLn = (message: string, indent: string = '') => message.replace(/\n/g, `\n${indent}`);
 
 export function printHelpFromSchema(
   schema: ReturnType<typeof commandsSchemaToHelpSchema>,
@@ -219,14 +219,14 @@ export function printHelpFromSchema(
 
     // Option description
     if (description && includeOptionDescription) {
-      print(c.description(splitNewLine(description, indent(longest + 10))));
+      print(c.description(addIndentLn(description, indent(longest + 10))));
       printOptionalRequired();
     }
 
     // print example
     if (example && includeOptionExample) {
       print(c.exampleTitle('example:'));
-      print(indent(2), c.example(splitNewLine(example, indent(longest + 21))));
+      print(indent(2), c.example(addIndentLn(example, indent(longest + 21))));
       printOptionalRequired();
     }
 
@@ -261,7 +261,7 @@ export function printHelpFromSchema(
 
     // Command Description
     if (description && includeCommandDescription) {
-      print(splitNewLine(description, indent(longest + 10)));
+      print(addIndentLn(description, indent(longest + 10)));
       print(ln(1), indent(longest + 9));
       hasInformation = true;
     }
@@ -269,7 +269,7 @@ export function printHelpFromSchema(
     // Command Example
     if (example && includeCommandExample) {
       print(c.exampleTitle('example:'));
-      print(indent(2), c.example(splitNewLine(example, indent(longest + 21))));
+      print(indent(2), c.example(addIndentLn(example, indent(longest + 21))));
       print(ln(1), indent(longest + 9));
       hasInformation = true;
     }
@@ -285,7 +285,7 @@ export function printHelpFromSchema(
     // Command Arguments Description
     if (argsDescription && includeCommandArguments) {
       print(c.argumentsTitle('arguments:'));
-      print(indent(0), c.arguments(splitNewLine(argsDescription, indent(longest + 21))));
+      print(indent(0), c.arguments(addIndentLn(argsDescription, indent(longest + 21))));
       println();
       hasInformation = true;
     }
@@ -322,9 +322,9 @@ export function printHelpFromSchema(
 
   if (!includeGlobalOptions) return;
 
-  const CliGlobalOptions = schema.global.options;
+  const cliGlobalOptions = schema.global.options;
 
-  if (CliGlobalOptions.length === 0) return;
+  if (cliGlobalOptions.length === 0) return;
 
   // * Global
   printTitle('Global');
@@ -333,12 +333,12 @@ export function printHelpFromSchema(
   if (schema.global.argsDescription && includeGlobalArguments) {
     print(ln(1), indent(3));
     print(c.argumentsTitle.bold('Arguments:'));
-    print(indent(longest - 5), c.arguments(splitNewLine(schema.global.argsDescription, indent(longest + 10))));
+    print(indent(longest - 5), c.arguments(addIndentLn(schema.global.argsDescription, indent(longest + 10))));
     println();
   }
 
   // Global Options
-  for (let i = 0; i < CliGlobalOptions.length; i++) printOption(CliGlobalOptions[i]);
+  for (let i = 0; i < cliGlobalOptions.length; i++) printOption(cliGlobalOptions[i]);
 
   println();
 }
