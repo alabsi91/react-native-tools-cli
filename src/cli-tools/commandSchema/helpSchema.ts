@@ -184,6 +184,8 @@ export function printHelpFromSchema(
     if (aliases && aliases.length && includeOptionAliases) {
       process.stdout.write(c.aliasesTitle('aliases:   ') + c.aliases(aliases.join(c.dim(', '))) + nl(1));
     }
+
+    if ((!example || !includeOptionExample) && (!aliases || !includeOptionAliases)) console.log('');
   };
 
   const printCommand = (command: {
