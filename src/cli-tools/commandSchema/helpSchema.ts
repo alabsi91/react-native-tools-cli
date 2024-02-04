@@ -94,6 +94,12 @@ export function printHelpFromSchema(
   /** Colors */
   const c = {
     title: chalk.bold.blue.inverse,
+    description: chalk.white,
+
+    command: chalk.bold.yellow,
+
+    option: chalk.cyan,
+    type: chalk.magenta,
 
     aliasesTitle: chalk.white.dim,
     aliases: chalk.hex('#FF9800'),
@@ -104,12 +110,10 @@ export function printHelpFromSchema(
     argumentsTitle: chalk.white.dim,
     arguments: chalk.white,
 
-    command: chalk.bold.yellow,
-    options: chalk.cyan,
-    description: chalk.white,
-    value: chalk.magenta,
     optional: chalk.italic.dim,
-    dim: chalk.white.dim,
+    required: chalk.italic.dim,
+
+    punctuation: chalk.white.dim,
   };
 
   // Get longest indents
@@ -126,10 +130,10 @@ export function printHelpFromSchema(
   const formatSyntax = (syntax: string) => {
     if (syntax.includes('=')) {
       const [part1, part2] = syntax.split('=');
-      if (!includeOptionsType) return c.options(part1, indent(part2.length)); // don't show type
-      return c.options(part1) + chalk.reset('=') + c.value(part2.replace(/"/g, c.dim('"')));
+      if (!includeOptionsType) return c.option(part1, indent(part2.length)); // don't show type
+      return c.option(part1) + chalk.reset('=') + c.type(part2.replace(/"/g, c.punctuation('"')));
     }
-    return c.options(syntax);
+    return c.option(syntax);
   };
 
   /** New line */
@@ -147,15 +151,15 @@ export function printHelpFromSchema(
   const printCliDescription = () => {
     if (schema.description) {
       printTitle('Description');
-      console.log(nl(1), indent(2), c.dim('-'), c.description(schema.description), nl(1));
+      console.log(nl(1), indent(2), c.punctuation('-'), c.description(schema.description), nl(1));
     }
   };
 
   /** Print CLI usage */
   const printCliUsage = () => {
-    const usage = schema.usage ?? schema.name + c.command(' <command>') + c.options(' [options]') + c.argumentsTitle(' [args]');
+    const usage = schema.usage ?? schema.name + c.command(' <command>') + c.option(' [options]') + c.argumentsTitle(' [args]');
     printTitle('Usage');
-    console.log(nl(1), indent(2), c.dim('$'), usage, nl(1));
+    console.log(nl(1), indent(2), c.punctuation('$'), usage, nl(1));
   };
 
   /** Print an option */
@@ -172,7 +176,7 @@ export function printHelpFromSchema(
     if (isOptional && showOptionalKeyword) {
       process.stdout.write(indent(4) + c.optional('optional') + indent(longest - 2));
     } else if (!isOptional && showRequiredKeyword) {
-      process.stdout.write(indent(4) + c.optional('required') + indent(longest - 2));
+      process.stdout.write(indent(4) + c.required('required') + indent(longest - 2));
     } else {
       process.stdout.write(indent(longest + 10));
     }
@@ -182,7 +186,7 @@ export function printHelpFromSchema(
     }
 
     if (aliases && aliases.length && includeOptionAliases) {
-      process.stdout.write(c.aliasesTitle('aliases:   ') + c.aliases(aliases.join(c.dim(', '))) + nl(1));
+      process.stdout.write(c.aliasesTitle('aliases:   ') + c.aliases(aliases.join(c.punctuation(', '))) + nl(1));
     }
 
     if ((!example || !includeOptionExample) && (!aliases || !includeOptionAliases)) console.log('');
@@ -201,7 +205,7 @@ export function printHelpFromSchema(
     // Command
     console.log(
       nl(1),
-      c.dim('#'),
+      c.punctuation('#'),
       c.command(name),
       c.description(description ? indent(longest + 6 - name.length) + description : ''),
     );
@@ -212,7 +216,7 @@ export function printHelpFromSchema(
 
     // Command Aliases
     if (aliases && aliases.length && includeCommandAliases) {
-      console.log(indent(longest + 9), c.aliasesTitle('aliases:  '), c.aliases(aliases.join(c.dim(', '))));
+      console.log(indent(longest + 9), c.aliasesTitle('aliases:  '), c.aliases(aliases.join(c.punctuation(', '))));
     }
 
     // Command Arguments Description
