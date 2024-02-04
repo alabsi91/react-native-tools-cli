@@ -179,25 +179,30 @@ export function printHelpFromSchema(
       c.description(splitNewLine(description ?? '', indent(longest + 10))),
     );
 
-    if (isOptional && showOptionalKeyword) {
+    const isOptionalShown = isOptional && showOptionalKeyword;
+    const isRequiredShown = !isOptional && showRequiredKeyword;
+    const isExample = example && includeOptionExample;
+    const isAliases = aliases && aliases.length && includeOptionAliases;
+
+    if (isOptionalShown) {
       process.stdout.write(indent(4) + c.optional('optional') + indent(longest - 2));
-    } else if (!isOptional && showRequiredKeyword) {
+    } else if (isRequiredShown) {
       process.stdout.write(indent(4) + c.required('required') + indent(longest - 2));
     } else {
       process.stdout.write(indent(longest + 10));
     }
 
-    if (example && includeOptionExample) {
+    if (isExample) {
       process.stdout.write(
-        c.exampleTitle('example:   ') + c.example(splitNewLine(example, indent(longest + 10))) + nl(1) + indent(longest + 10),
+        c.exampleTitle('example:   ') + c.example(splitNewLine(example, indent(longest + 21))) + nl(1) + indent(longest + 10),
       );
     }
 
-    if (aliases && aliases.length && includeOptionAliases) {
+    if (isAliases) {
       process.stdout.write(c.aliasesTitle('aliases:   ') + c.aliases(aliases.join(c.punctuation(', '))) + nl(1));
     }
 
-    if ((!example || !includeOptionExample) && (!aliases || !includeOptionAliases)) console.log('');
+    if (!isExample && !isAliases && (isOptionalShown || isRequiredShown)) console.log('');
   };
 
   const printCommand = (command: {
