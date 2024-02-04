@@ -96,10 +96,10 @@ export function printHelpFromSchema(
     title: chalk.bold.blue.inverse,
 
     aliasesTitle: chalk.white.dim,
-    aliases: chalk.hex('#00BCD4'),
+    aliases: chalk.hex('#FF9800'),
 
     exampleTitle: chalk.white.dim,
-    example: chalk.hex('#FF9800'),
+    example: chalk.cyan,
 
     argumentsTitle: chalk.white.dim,
     arguments: chalk.white,
