@@ -24,5 +24,6 @@
     "no-useless-call": 1,
     "no-unused-expressions": 1,
     "prettier/prettier": 1
-  }
+  },
+  "ignorePatterns": ["scripts/**/*.js", "nsis.config.js"]
 }
