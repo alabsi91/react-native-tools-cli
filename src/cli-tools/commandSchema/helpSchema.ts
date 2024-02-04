@@ -73,22 +73,43 @@ export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: st
   };
 }
 
+/** Print */
+const print = (...messages: string[]) => process.stdout.write(messages.join(' '));
+
+/** Print line */
+const println = (...messages: string[]) => console.log(...messages);
+
+/** New line */
+const ln = (count: number) => '\n'.repeat(count);
+
+/** Space */
+const indent = (count: number) => ' '.repeat(count);
+
+/** Split new line and add indent */
+const splitNewLine = (message: string, indent: string = '') => message.replace(/\n/g, `\n${indent}`);
+
 export function printHelpFromSchema(
   schema: ReturnType<typeof commandsSchemaToHelpSchema>,
   {
     includeCommands,
     includeDescription = true,
     includeUsage = true,
-    includeGlobalOptions = true,
-    includeOptionAliases = true,
+
+    includeOptionsType = true,
+    includeOptionDescription = true,
     includeOptionExample = true,
-    includeCommandAliases = true,
-    includeCommandExample = true,
-    includeCommandArguments = true,
-    includeGlobalArguments = true,
+    includeOptionAliases = true,
+
     showOptionalKeyword = true,
     showRequiredKeyword = true,
-    includeOptionsType = true,
+
+    includeCommandDescription = true,
+    includeCommandExample = true,
+    includeCommandArguments = true,
+    includeCommandAliases = true,
+
+    includeGlobalOptions = true,
+    includeGlobalArguments = true,
   }: PrintHelpOptions = {},
 ) {
   /** Colors */
@@ -136,30 +157,23 @@ export function printHelpFromSchema(
     return c.option(syntax);
   };
 
-  /** New line */
-  const nl = (count: number) => '\n'.repeat(count);
-
-  /** Space */
-  const indent = (count: number) => ' '.repeat(count);
-
   /** Print a styled title */
   const printTitle = (title: string) => {
-    console.log(c.title(` ${title} `));
+    println(c.title(` ${title} `));
   };
 
   /** Print CLI description */
   const printCliDescription = () => {
-    if (schema.description) {
-      printTitle('Description');
-      console.log(nl(1), indent(2), c.punctuation('-'), c.description(schema.description), nl(1));
-    }
+    if (!schema.description) return;
+    printTitle('Description');
+    println(ln(1), indent(2), c.punctuation('-'), c.description(schema.description), ln(1));
   };
 
   /** Print CLI usage */
   const printCliUsage = () => {
     const usage = schema.usage ?? schema.name + c.command(' <command>') + c.option(' [options]') + c.argumentsTitle(' [args]');
     printTitle('Usage');
-    console.log(nl(1), indent(2), c.punctuation('$'), usage, nl(1));
+    println(ln(1), indent(2), c.punctuation('$'), usage, ln(1));
   };
 
   /** Print an option */
@@ -171,38 +185,60 @@ export function printHelpFromSchema(
     aliases?: string[];
   }) => {
     const { syntax, isOptional, description, example, aliases } = option;
-    console.log(
-      nl(1),
-      indent(2),
-      formatSyntax(syntax),
-      indent(longest + 4 - syntax.length),
-      c.description(splitNewLine(description ?? '', indent(longest + 10))),
-    );
 
-    const isOptionalShown = isOptional && showOptionalKeyword;
-    const isRequiredShown = !isOptional && showRequiredKeyword;
-    const isExample = example && includeOptionExample;
-    const isAliases = aliases && aliases.length && includeOptionAliases;
+    let isOptionalRequiredPrinted = false;
+    let isOptionalRequiredPrintedLast = true;
+    const printOptionalRequired = () => {
+      if (isOptionalRequiredPrinted) {
+        print(ln(1), indent(longest + 9));
+        isOptionalRequiredPrintedLast = false;
+        return;
+      }
 
-    if (isOptionalShown) {
-      process.stdout.write(indent(4) + c.optional('optional') + indent(longest - 2));
-    } else if (isRequiredShown) {
-      process.stdout.write(indent(4) + c.required('required') + indent(longest - 2));
-    } else {
-      process.stdout.write(indent(longest + 10));
+      isOptionalRequiredPrinted = true;
+
+      if (isOptional && showOptionalKeyword) {
+        print(ln(1), indent(2), c.optional('optional'), indent(longest - 3));
+        return;
+      }
+
+      if (!isOptional && showRequiredKeyword) {
+        print(ln(1), indent(2), c.required('required'), indent(longest - 3));
+        return;
+      }
+
+      print(ln(1), indent(longest + 9));
+    };
+
+    // Option syntax
+    print(ln(1), indent(3));
+    print(formatSyntax(syntax));
+
+    // space after syntax
+    print(indent(longest + 6 - syntax.length));
+
+    // Option description
+    if (description && includeOptionDescription) {
+      print(c.description(splitNewLine(description, indent(longest + 10))));
+      printOptionalRequired();
     }
 
-    if (isExample) {
-      process.stdout.write(
-        c.exampleTitle('example:   ') + c.example(splitNewLine(example, indent(longest + 21))) + nl(1) + indent(longest + 10),
-      );
+    // print example
+    if (example && includeOptionExample) {
+      print(c.exampleTitle('example:'));
+      print(indent(2), c.example(splitNewLine(example, indent(longest + 21))));
+      printOptionalRequired();
     }
 
-    if (isAliases) {
-      process.stdout.write(c.aliasesTitle('aliases:   ') + c.aliases(aliases.join(c.punctuation(', '))) + nl(1));
+    // print aliases
+    if (aliases && aliases.length && includeOptionAliases) {
+      print(c.aliasesTitle('aliases:'));
+      print(indent(2), c.aliases(aliases.join(c.punctuation(', '))));
+      printOptionalRequired();
     }
 
-    if (!isExample && !isAliases && (isOptionalShown || isRequiredShown)) console.log('');
+    if (!isOptionalRequiredPrinted) printOptionalRequired();
+    if (isOptionalRequiredPrintedLast) println();
   };
 
   const printCommand = (command: {
@@ -215,31 +251,46 @@ export function printHelpFromSchema(
     const { name, description, example, aliases, argsDescription } = command;
     if (!name) return;
 
-    // Command
-    console.log(
-      nl(1),
-      c.punctuation('#'),
-      c.command(name),
-      c.description(description ? indent(longest + 6 - name.length) + splitNewLine(description, indent(longest + 10)) : ''),
-    );
+    let hasInformation = false; // to check if we print something after the command
 
+    // Command
+    print(ln(1), c.punctuation('#'), c.command(name));
+
+    // space after the command
+    print(indent(longest + 7 - name.length));
+
+    // Command Description
+    if (description && includeCommandDescription) {
+      print(splitNewLine(description, indent(longest + 10)));
+      print(ln(1), indent(longest + 9));
+      hasInformation = true;
+    }
+
+    // Command Example
     if (example && includeCommandExample) {
-      console.log(indent(longest + 9), c.exampleTitle('example:  '), c.example(splitNewLine(example, indent(longest + 21))));
+      print(c.exampleTitle('example:'));
+      print(indent(2), c.example(splitNewLine(example, indent(longest + 21))));
+      print(ln(1), indent(longest + 9));
+      hasInformation = true;
     }
 
     // Command Aliases
     if (aliases && aliases.length && includeCommandAliases) {
-      console.log(indent(longest + 9), c.aliasesTitle('aliases:  '), c.aliases(aliases.join(c.punctuation(', '))));
+      print(c.aliasesTitle('aliases:'));
+      print(indent(2), c.aliases(aliases.join(c.punctuation(', '))));
+      print(ln(1), indent(longest + 9));
+      hasInformation = true;
     }
 
     // Command Arguments Description
     if (argsDescription && includeCommandArguments) {
-      console.log(
-        indent(longest + 9),
-        c.argumentsTitle('arguments:'),
-        c.arguments(splitNewLine(argsDescription, indent(longest + 21))),
-      );
+      print(c.argumentsTitle('arguments:'));
+      print(indent(0), c.arguments(splitNewLine(argsDescription, indent(longest + 21))));
+      println();
+      hasInformation = true;
     }
+
+    if (!hasInformation) println();
   };
 
   // * CLI Description
@@ -267,7 +318,7 @@ export function printHelpFromSchema(
     }
   }
 
-  console.log('');
+  println();
 
   if (!includeGlobalOptions) return;
 
@@ -280,21 +331,14 @@ export function printHelpFromSchema(
 
   // Global Arguments Description
   if (schema.global.argsDescription && includeGlobalArguments) {
-    console.log(
-      nl(1),
-      indent(2),
-      c.argumentsTitle.bold('Arguments:'),
-      indent(longest - 6),
-      c.arguments(splitNewLine(schema.global.argsDescription, indent(longest + 10))),
-    );
+    print(ln(1), indent(3));
+    print(c.argumentsTitle.bold('Arguments:'));
+    print(indent(longest - 5), c.arguments(splitNewLine(schema.global.argsDescription, indent(longest + 10))));
+    println();
   }
 
   // Global Options
   for (let i = 0; i < CliGlobalOptions.length; i++) printOption(CliGlobalOptions[i]);
 
-  console.log('');
-}
-
-function splitNewLine(message: string, indent: string = '') {
-  return message.replace(/\n/g, `\n${indent}`);
+  println();
 }

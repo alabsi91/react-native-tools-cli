@@ -224,11 +224,17 @@ export type PrintHelpOptions<T = undefined> = {
   /** Whether to include global options in the help message */
   includeGlobalOptions?: boolean;
 
+  /** Whether to include option descriptions in the help message */
+  includeOptionDescription?: boolean;
+
   /** Whether to display option aliases in the help message */
   includeOptionAliases?: boolean;
 
   /** Whether to include option examples in the help message */
   includeOptionExample?: boolean;
+
+  /** Whether to include command descriptions in the help message */
+  includeCommandDescription?: boolean;
 
   /** Whether to include command aliases in the help message */
   includeCommandAliases?: boolean;
