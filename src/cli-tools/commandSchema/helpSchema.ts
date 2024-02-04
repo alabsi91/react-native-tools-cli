@@ -171,7 +171,13 @@ export function printHelpFromSchema(
     aliases?: string[];
   }) => {
     const { syntax, isOptional, description, example, aliases } = option;
-    console.log(nl(1), indent(2), formatSyntax(syntax), indent(longest + 4 - syntax.length), c.description(description ?? ''));
+    console.log(
+      nl(1),
+      indent(2),
+      formatSyntax(syntax),
+      indent(longest + 4 - syntax.length),
+      c.description(splitNewLine(description ?? '', indent(longest + 10))),
+    );
 
     if (isOptional && showOptionalKeyword) {
       process.stdout.write(indent(4) + c.optional('optional') + indent(longest - 2));
@@ -182,7 +188,9 @@ export function printHelpFromSchema(
     }
 
     if (example && includeOptionExample) {
-      process.stdout.write(c.exampleTitle('example:   ') + c.example(example) + nl(1) + indent(longest + 10));
+      process.stdout.write(
+        c.exampleTitle('example:   ') + c.example(splitNewLine(example, indent(longest + 10))) + nl(1) + indent(longest + 10),
+      );
     }
 
     if (aliases && aliases.length && includeOptionAliases) {
@@ -207,11 +215,11 @@ export function printHelpFromSchema(
       nl(1),
       c.punctuation('#'),
       c.command(name),
-      c.description(description ? indent(longest + 6 - name.length) + description : ''),
+      c.description(description ? indent(longest + 6 - name.length) + splitNewLine(description, indent(longest + 10)) : ''),
     );
 
     if (example && includeCommandExample) {
-      console.log(indent(longest + 9), c.exampleTitle('example:  '), c.example(example));
+      console.log(indent(longest + 9), c.exampleTitle('example:  '), c.example(splitNewLine(example, indent(longest + 21))));
     }
 
     // Command Aliases
@@ -221,7 +229,11 @@ export function printHelpFromSchema(
 
     // Command Arguments Description
     if (argsDescription && includeCommandArguments) {
-      console.log(indent(longest + 9), c.argumentsTitle('arguments:'), c.arguments(argsDescription));
+      console.log(
+        indent(longest + 9),
+        c.argumentsTitle('arguments:'),
+        c.arguments(splitNewLine(argsDescription, indent(longest + 21))),
+      );
     }
   };
 
@@ -268,7 +280,7 @@ export function printHelpFromSchema(
       indent(2),
       c.argumentsTitle.bold('Arguments:'),
       indent(longest - 6),
-      c.arguments(schema.global.argsDescription),
+      c.arguments(splitNewLine(schema.global.argsDescription, indent(longest + 10))),
     );
   }
 
@@ -276,4 +288,8 @@ export function printHelpFromSchema(
   for (let i = 0; i < CliGlobalOptions.length; i++) printOption(CliGlobalOptions[i]);
 
   console.log('');
+}
+
+function splitNewLine(message: string, indent: string = '') {
+  return message.replace(/\n/g, `\n${indent}`);
 }
