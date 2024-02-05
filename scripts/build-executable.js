@@ -8,6 +8,13 @@ import { promisify } from 'util';
 
 const cmd = promisify(exec);
 
+// * Check if node version is higher than 20
+const nodeVersion = parseInt(process.version.slice(1), 10);
+if (nodeVersion < 20) {
+  console.log(chalk.red('⛔ Node.js version 20 or higher is required.'));
+  process.exit(1);
+}
+
 const isWindows = process.platform === 'win32';
 const isMac = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
