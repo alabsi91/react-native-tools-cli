@@ -1,17 +1,22 @@
 # Node.js CLI template
 
-- ✅ TypeScript.
-- ✅ EsLint.
-- ✅ EsBuild.
+- ✅ Typescript.
+- ✅ eslint.
+- ✅ esbuild.
+- ✅ prettier.
 - ✅ Inquirer.
 - ✅ Chalk.
 - ✅ Gradient-string
-- ✅ NSIS installer.
-- ✅ Helpers
+- ✅ node-fetch
+- ✅ NSIS installer
+- ✅ built-in:
   - Arguments parser.
+  - Help message generator.
+  - Logger.
   - Spinner (loading).
+  - and more...
 
-## 🔷 Scripts
+## Scripts
 
 ### `start:dev`
 
@@ -33,19 +38,20 @@
 
 - Start the project from the bundle folder.
 
+### `build:executable`
+
+- Build the project into an executable file.
+- Supports Windows, Linux and macOS.
+- Nodejs version must be `20` or higher.
+
 ### `build:installer`
 
-> ⚠️⚠️ For Windows only
+> ⚠️ For Windows only
 
-- Creates an NSIS installer to install your CLI to Windows.
-- First, you need to install `NSIS` to your system via PowerShell `winget install NSIS.NSIS`.
-- The installer will add the installation folder path to the `PATH` system variable.
-- By default, the installer will include Node.js.
-- To change the installer icon and banner, replace the files in `.\scripts\installer-assets`
-- The script will get the installer information from the `package.json` file.
-- See `.\scripts\build-installer.js` for more information.
+- Creates an NSIS installer.
 
-## 🔷 Usage
+
+## Usage
 
 - First clone the project.
 

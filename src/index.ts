@@ -96,12 +96,6 @@ async function main() {
         includeDescription: false,
         includeUsage: false,
         includeGlobalOptions: false,
-        includeOptionAliases: false,
-        includeCommandAliases: false,
-        includeCommandArguments: false,
-        showOptionalKeyword: false,
-        showRequiredKeyword: false,
-        includeOptionsType: false,
       });
       return;
     }
