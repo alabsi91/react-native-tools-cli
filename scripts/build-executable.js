@@ -18,6 +18,12 @@ if (nodeVersion < 20) {
 const isWindows = process.platform === 'win32';
 const isMac = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
+const isAndroid = process.platform === 'android';
+
+if (isAndroid) {
+  console.log(chalk.red('⛔ Android is not supported yet.'));
+  process.exit(1);
+}
 
 const outFolder = 'executable';
 const entryFile = 'src/index.ts';
@@ -194,20 +200,22 @@ try {
 }
 
 // * copy included assets
-try {
-  loading = spinner(`- Copying included assets to "${outFolder}" folder ...`);
-  for (const asset of includeAssets) {
-    if (!existsSync(asset)) {
-      console.log(chalk.red(`Error: path "${asset}" not found!`));
-      continue;
-    }
+if (includeAssets.length) {
+  try {
+    loading = spinner(`- Copying included assets to "${outFolder}" folder ...`);
+    for (const asset of includeAssets) {
+      if (!existsSync(asset)) {
+        console.log(chalk.red(`Error: path "${asset}" not found!`));
+        continue;
+      }
 
-    await recursiveCopy(path.normalize(asset), path.join(outFolder, path.basename(asset)));
+      await recursiveCopy(path.normalize(asset), path.join(outFolder, path.basename(asset)));
+    }
+    loading('- Included assets copied successfully!');
+  } catch (error) {
+    loading('- Error: copying include files failed!', true);
+    process.exit(1);
   }
-  loading('- Included assets copied successfully!');
-} catch (error) {
-  loading('- Error: copying include files failed!', true);
-  process.exit(1);
 }
 
 console.log(chalk.bgGreen.black.bold('\n 🥳 Done!\n'));
