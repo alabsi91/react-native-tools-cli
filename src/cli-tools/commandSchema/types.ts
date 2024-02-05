@@ -117,6 +117,12 @@ type CommandOptions = {
   type: AllowedOptionTypes;
   /**
    * - **Optional** `string`
+   * - The description of the option.
+   * - Used for generating the help message.
+   */
+  description?: string;
+  /**
+   * - **Optional** `string`
    * - The example of the option.
    * - Used for generating the help message.
    */

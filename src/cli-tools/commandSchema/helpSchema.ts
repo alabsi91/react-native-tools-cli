@@ -6,7 +6,7 @@ import type { AllowedOptionTypes, CommandSchema, PrintHelpOptions } from './type
 export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: string, cliDescription?: string, usage?: string) {
   const getType = (item: AllowedOptionTypes) => {
     // literal
-    if ('value' in item) return 'literal';
+    if ('value' in item) return typeof item.value;
     // string
     if (item.safeParse('string').success) return 'string';
     // number
@@ -22,20 +22,6 @@ export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: st
     return '--' + name.replace(/[A-Z]/g, match => `-${match.toLowerCase()}`);
   };
 
-  const getSyntax = (name: string, item: AllowedOptionTypes) => {
-    const type = getType(item);
-    const cliName = getCliName(name);
-    if (cliName.length === 2) return cliName; // on character E.g. -e
-    if (type === 'boolean' || type === 'number') return `${cliName}=${type}`;
-    if (type === 'string') return `${cliName}="${type}"`;
-    if (type === 'literal' && 'value' in item) {
-      if (typeof item.value === 'number') return `${cliName}=${item.value.toString()}`;
-      return `${cliName}="${item.value}"`;
-    }
-
-    return cliName;
-  };
-
   const global = schema.filter(c => c.command === NO_COMMAND)[0];
   return {
     name: cliName ?? 'node-cli',
@@ -45,9 +31,10 @@ export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: st
       argsDescription: global?.argsType?.description,
       options:
         global?.options?.map(o => ({
-          syntax: getSyntax(o.name, o.type),
+          type: getType(o.type),
+          name: getCliName(o.name),
           isOptional: o.type.isOptional(),
-          description: o.type.description,
+          description: o.description ?? o.type.description,
           example: o.example,
           aliases: o.aliases && o.aliases.map(a => getCliName(a)),
         })) ?? [],
@@ -63,9 +50,10 @@ export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: st
         options:
           c.options &&
           c.options.map(o => ({
-            syntax: getSyntax(o.name, o.type),
+            type: getType(o.type),
+            name: getCliName(o.name),
             isOptional: o.type.isOptional(),
-            description: o.type.description,
+            description: o.description ?? o.type.description,
             example: o.example,
             aliases: o.aliases && o.aliases.map(a => getCliName(a)),
           })),
@@ -137,25 +125,21 @@ export function printHelpFromSchema(
     punctuation: chalk.white.dim,
   };
 
+  /** Add colors for the options syntax prop. E.g. --output="string" */
+  const formatSyntax = (name: string, type: string) => {
+    if (!includeOptionsType) return { syntax: c.option(name), len: name.length };
+    return { syntax: c.option(name) + chalk.white('=') + c.type(type), len: name.length + 1 + type.length };
+  };
+
   // Get longest indents
   const longestCommandName = Math.max(...schema.commands.map(command => command.name?.length ?? 0));
-  const longestGlobalSyntax = Math.max(...schema.global.options.map(option => option?.syntax?.length ?? 0));
+  const longestGlobalSyntax = Math.max(...schema.global.options.map(option => formatSyntax(option.name, option.type).len), 0);
   const longestSyntax = Math.max(
     ...schema.commands.map(command =>
-      command.options ? Math.max(...command.options.map(option => option.syntax?.length ?? 0), 0) : 0,
+      command.options ? Math.max(...command.options.map(option => formatSyntax(option.name, option.type).len), 0) : 0,
     ),
   );
   const longest = Math.max(longestCommandName, longestGlobalSyntax, longestSyntax);
-
-  /** Add colors for the options syntax prop. E.g. --output="string" */
-  const formatSyntax = (syntax: string) => {
-    if (syntax.includes('=')) {
-      const [part1, part2] = syntax.split('=');
-      if (!includeOptionsType) return c.option(part1, indent(part2.length)); // don't show type
-      return c.option(part1) + chalk.reset('=') + c.type(part2.replace(/"/g, c.punctuation('"')));
-    }
-    return c.option(syntax);
-  };
 
   /** Print a styled title */
   const printTitle = (title: string) => {
@@ -178,13 +162,15 @@ export function printHelpFromSchema(
 
   /** Print an option */
   const printOption = (option: {
-    syntax: string;
+    name: string;
+    type: string;
     isOptional: boolean;
     description?: string;
     example?: string;
     aliases?: string[];
   }) => {
-    const { syntax, isOptional, description, example, aliases } = option;
+    const { name, type, isOptional, description, example, aliases } = option;
+    const { syntax, len: syntaxLen } = formatSyntax(name, type);
 
     let isOptionalRequiredPrinted = false;
     let isOptionalRequiredPrintedLast = true;
@@ -212,10 +198,10 @@ export function printHelpFromSchema(
 
     // Option syntax
     print(ln(1), indent(3));
-    print(formatSyntax(syntax));
+    print(syntax);
 
     // space after syntax
-    print(indent(longest + 6 - syntax.length));
+    print(indent(longest + 6 - syntaxLen));
 
     // Option description
     if (description && includeOptionDescription) {
