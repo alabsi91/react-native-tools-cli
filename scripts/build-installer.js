@@ -12,6 +12,12 @@ import { cmd_script, ps1_script, sh_script } from './launch-scripts.js';
 
 const cmd = promisify(exec);
 
+const isWindows = process.platform === 'win32';
+if (!isWindows) {
+  console.log(chalk.red('⛔ Only Windows platform is supported.'));
+  process.exit(1);
+}
+
 // ? ⚠️ install NSIS via powershell `winget install NSIS.NSIS`
 
 const {
