@@ -204,6 +204,7 @@ const {
   }
 
   console.log(chalk.bgGreen.black.bold('\n 🥳 Done!\n'));
+  console.log(chalk.green.bold('Installer created successfully at'), chalk.yellow(path.join(outFolder, 'installer.exe')), '\n');
 })();
 
 // * progress animation
