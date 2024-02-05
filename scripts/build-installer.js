@@ -103,7 +103,6 @@ const {
 
     progress('- Included assets copied successfully!');
   } catch (error) {
-    console.log('error :', error);
     progress('- Error: copying include files failed!', true);
     return;
   }
@@ -215,7 +214,7 @@ function loading(message) {
   const id = setInterval(() => {
     process.stdout.clearLine(0);
     process.stdout.cursorTo(0);
-    process.stdout.write(`${chalk.cyan(frames[i++ % frames.length])} ${chalk.yellow(message)}`);
+    process.stdout.write(`${chalk.cyan(frames[i++ % frames.length])} ${chalk.white.bold(message)}`);
   }, 125);
   return (endMessage, isError = false) => {
     clearInterval(id);
