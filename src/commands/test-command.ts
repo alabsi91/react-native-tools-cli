@@ -1,14 +1,14 @@
+import input from '@inquirer/input';
 import { z } from 'zod';
 
 import { Log } from '@cli/logger.js';
 import { spinner } from '@cli/spinner.js';
 import { sleep } from '@cli/terminal.js';
 import Schema from '@schema';
-import { askForStringInput } from '@utils/utils.js';
 
 export default async function testCommand(name: string | undefined, age: number | undefined) {
-  name = name || (await askForStringInput('Enter your name :', 'John Doe'));
-  age = age || +(await askForStringInput('Enter your age :'));
+  name = name || (await input({ message: 'Enter your name :', default: 'John Doe' }));
+  age = age || +(await input({ message: 'Enter your age :' }));
 
   const loading = spinner('Processing...');
   await sleep(2000);
