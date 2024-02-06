@@ -30,7 +30,7 @@ console.log(
 // ⚠️ For testing in development mode only
 if (CONSTANTS.isDev) {
   // Here you can test your CLI arguments while using hot reload in development mode.
-  testCliArgsInput('test ');
+  testCliArgsInput('-h');
 }
 
 async function main() {
@@ -43,13 +43,14 @@ async function main() {
     globalOptions: [
       {
         name: 'help',
-        type: z.boolean().optional().describe('Show this help message.'),
+        type: z.boolean().optional(),
+        description: 'Show this help message.',
         example: '--help or -h',
         aliases: ['h'],
       },
       {
         name: 'version',
-        type: z.boolean().optional().describe('Show the version.'),
+        type: z.boolean().optional().describe('Show CLI version.'),
         aliases: ['v'],
       },
     ],
