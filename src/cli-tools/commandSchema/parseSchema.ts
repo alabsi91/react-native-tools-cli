@@ -166,6 +166,9 @@ export function parse<T extends CommandSchema[]>(...params: T): ParseReturnType<
     }
   });
 
+  const noCommand = commands.filter(c => c.command === NO_COMMAND)[0];
+  if (noCommand) noCommand.command = undefined!;
+
   return { ...refined.safeParse(results), schemas: commands };
 }
 

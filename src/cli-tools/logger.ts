@@ -43,11 +43,13 @@ function getNewlines(messages: string[]) {
   const newlineRegex = /^(\s*[\n\r]+)/;
   const match = message.match(newlineRegex);
 
+  const indent = ' '.repeat(16);
+
   if (match) {
     const newlines = match[0];
-    const afterNewline = message.substring(match[0].length);
+    const afterNewline = message.substring(match[0].length).replace(/\n/g, `\n${indent}`);
     return { newlines, afterNewline };
   }
 
-  return { newlines: '', afterNewline: message };
+  return { newlines: '', afterNewline: message.replace(/\n/g, `\n${indent}`) };
 }
