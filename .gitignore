@@ -36,6 +36,4 @@ bundle
 
 installer
 
-.vscode/*
-!.vscode/launch.json
-!.vscode/tasks.json
+executable

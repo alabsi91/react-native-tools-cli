@@ -1,6 +1,6 @@
-import { sleep } from '@/cli-tools/terminal.js';
+import { Log } from '@cli/logger.js';
+import { sleep } from '@cli/terminal.js';
 import chalk from 'chalk';
-import { Log } from './logger.js';
 
 // ? 💁 See `https://github.com/sindresorhus/cli-spinners/blob/main/spinners.json` for more spinners.
 const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
@@ -40,7 +40,7 @@ export function spinner(message: string, autoStopTimer = 0) {
         process.stdout.cursorTo(0, rowNumber); // ⤴️ move cursor to the start of the line.
         process.stdout.clearLine(0); // 🧹 clear first progress line.
         const spinner = chalk.cyan(frames[i++ % frames.length]); // get next frame
-        const loadingMessage = chalk.yellow(startMessage); // ✉️ user message.
+        const loadingMessage = chalk.white.bold(startMessage); // ✉️ user message.
         process.stdout.write(`${spinner}  ${loadingMessage}`); // 🖨️ print spinner to the console.
       }, 80);
     });

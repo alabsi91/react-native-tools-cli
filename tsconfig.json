@@ -6,18 +6,19 @@
       "@commands/*": ["src/commands/*"],
       "@utils/*": ["src/utils/*"],
       "@cli/*": ["src/cli-tools/*"],
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@types": ["src/types.js"]
     },
     "module": "Node16",
     "target": "ESNext",
     "outDir": "dist",
     "lib": ["ESNext"],
-    "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "removeComments": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "sourceMap": true
   },
   "include": ["src"],
   "exclude": ["node_modules"]

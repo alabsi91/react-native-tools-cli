@@ -34,6 +34,7 @@ const plugins = [
       platform: 'node',
       outfile,
       format: 'esm',
+      sourcemap: true,
       bundle: true,
       define: {
         'process.env.NODE_ENV': '"development"',
@@ -63,12 +64,12 @@ function run() {
   console.clear();
 
   //🔥 start new worker
-  console.log(chalk.yellow(`\n👀 Watching for changes in "./src/**/*" ...\n`));
-  worker = spawn('node', [outfile, ...process.argv.slice(2)], { stdio: 'inherit' });
+  console.log(chalk.yellow('\n👀 Watching for changes in "./src/**/*" ...\n'));
+  worker = spawn('node', ['--enable-source-maps', outfile], { stdio: 'inherit' });
 
   //👂 listen for worker exit signal.
   worker.on('exit', code => {
     if (code !== 0) return;
-    console.log(chalk.yellow(`\n\n🕐 Waiting for new changes ...`));
+    console.log(chalk.yellow('\n\n🕐 Waiting for new changes ...'));
   });
 }

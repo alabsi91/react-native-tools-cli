@@ -1,5 +1,5 @@
 import { createCommandSchema } from './commandSchema.js';
-import { createParseOptions, parse, printHelp } from './parseSchema.js';
+import { createParseOptions, formatError, parse, printHelp } from './parseSchema.js';
 
 const Schema = {
   /**
@@ -38,6 +38,7 @@ const Schema = {
    *     description: 'A CLI for testing.',
    *     // Optional - Throw an error if the schema is invalid.
    *     // This is recommended to set to false in production.
+   *     // **Default**: true if in development mode
    *     validateSchema: true,
    *     // Optional - Global options are used when no command is specified,
    *     // For example: `node-cli --help`
@@ -75,7 +76,10 @@ const Schema = {
    * - Print the help message that was generated when calling `Schema.parse(schema, ...schema, options)`
    * - If the help message is not generated, it will print a warning.
    */
-  printHelp: () => printHelp(),
+  printHelp,
+
+  /** - Takes a Zod error object and prints a formatted error message. */
+  formatError,
 };
 
 export default Schema;

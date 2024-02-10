@@ -1,12 +1,12 @@
 import chalk from 'chalk';
 import { NO_COMMAND } from './parseSchema.js';
 
-import type { AllowedOptionTypes, CommandSchema } from './types.js';
+import type { AllowedOptionTypes, CommandSchema, PrintHelpOptions } from './types.js';
 
 export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: string, cliDescription?: string, usage?: string) {
   const getType = (item: AllowedOptionTypes) => {
     // literal
-    if ('value' in item) return 'literal';
+    if ('value' in item) return typeof item.value;
     // string
     if (item.safeParse('string').success) return 'string';
     // number
@@ -22,162 +22,309 @@ export function commandsSchemaToHelpSchema(schema: CommandSchema[], cliName?: st
     return '--' + name.replace(/[A-Z]/g, match => `-${match.toLowerCase()}`);
   };
 
-  const getSyntax = (name: string, item: AllowedOptionTypes) => {
-    const type = getType(item);
-    const cliName = getCliName(name);
-    if (cliName.length === 2) return cliName; // on character E.g. -e
-    if (type === 'boolean' || type === 'number') return `${cliName}=${type}`;
-    if (type === 'string') return `${cliName}="${type}"`;
-    if (type === 'literal' && 'value' in item) {
-      if (typeof item.value === 'number') return `${cliName}=${item.value.toString()}`;
-      return `${cliName}="${item.value}"`;
-    }
-
-    return cliName;
-  };
-
+  const global = schema.filter(c => c.command === NO_COMMAND)[0];
   return {
-    name: cliName ?? 'rn-tools',
+    name: cliName ?? 'node-cli',
     description: cliDescription,
     usage,
-    globalOptions: schema
-      .filter(c => c.command === NO_COMMAND)
-      .map(
-        c =>
-          c.options?.map(o => ({
-            syntax: getSyntax(o.name, o.type),
-            isOptional: o.type.isOptional(),
-            description: o.type.description,
-            aliases: o.aliases && o.aliases.map(a => getCliName(a)),
-          })),
-      )
-      .flat(),
+    global: {
+      argsDescription: global?.argsType?.description,
+      options:
+        global?.options?.map(o => ({
+          type: getType(o.type),
+          name: getCliName(o.name),
+          isOptional: o.type.isOptional(),
+          description: o.description ?? o.type.description,
+          example: o.example,
+          aliases: o.aliases && o.aliases.map(a => getCliName(a)),
+        })) ?? [],
+    },
     commands: schema
       .filter(c => c.command !== NO_COMMAND)
       .map(c => ({
         name: c.command,
         description: c.description,
+        example: c.example,
+        argsDescription: c.argsType && c.argsType.description,
         aliases: c.aliases,
         options:
           c.options &&
           c.options.map(o => ({
-            syntax: getSyntax(o.name, o.type),
+            type: getType(o.type),
+            name: getCliName(o.name),
             isOptional: o.type.isOptional(),
-            description: o.type.description,
+            description: o.description ?? o.type.description,
+            example: o.example,
             aliases: o.aliases && o.aliases.map(a => getCliName(a)),
           })),
       })),
   };
 }
 
-export function printHelpFromSchema(schema: ReturnType<typeof commandsSchemaToHelpSchema>) {
+/** Print */
+const print = (...messages: string[]) => process.stdout.write(messages.join(' '));
+
+/** Print line */
+const println = (...messages: string[]) => console.log(...messages);
+
+/** New line */
+const ln = (count: number) => '\n'.repeat(count);
+
+/** Space */
+const indent = (count: number) => ' '.repeat(count);
+
+/** Add indent before each new line */
+const addIndentLn = (message: string, indent: string = '') => message.replace(/\n/g, `\n${indent}`);
+
+export function printHelpFromSchema(
+  schema: ReturnType<typeof commandsSchemaToHelpSchema>,
+  {
+    includeCommands,
+    includeDescription = true,
+    includeUsage = true,
+
+    includeOptionsType = true,
+    includeOptionDescription = true,
+    includeOptionExample = true,
+    includeOptionAliases = true,
+
+    showOptionalKeyword = true,
+    showRequiredKeyword = true,
+
+    includeCommandDescription = true,
+    includeCommandExample = true,
+    includeCommandArguments = true,
+    includeCommandAliases = true,
+
+    includeGlobalOptions = true,
+    includeGlobalArguments = true,
+  }: PrintHelpOptions = {},
+) {
+  /** Colors */
   const c = {
     title: chalk.bold.blue.inverse,
-    aliasesTitle: chalk.hex('#E91E63'),
-    command: chalk.bold.yellow,
-    options: chalk.cyan,
-    args: chalk.green,
-    alias: chalk.hex('#00BCD4'),
     description: chalk.white,
-    value: chalk.magenta,
+
+    command: chalk.bold.yellow,
+
+    option: chalk.cyan,
+    type: chalk.magenta,
+
+    aliasesTitle: chalk.white.dim,
+    aliases: chalk.hex('#FF9800'),
+
+    exampleTitle: chalk.white.dim,
+    example: chalk.cyan,
+
+    argumentsTitle: chalk.white.dim,
+    arguments: chalk.white,
+
     optional: chalk.italic.dim,
-    dim: chalk.white.dim,
+    required: chalk.italic.dim,
+
+    punctuation: chalk.white.dim,
   };
 
-  const formatSyntax = (syntax: string) => {
-    if (syntax.includes('=')) {
-      const [part1, part2] = syntax.split('=');
-      return c.options(part1) + chalk.reset('=') + c.value(part2.replace(/"/g, c.dim('"')));
-    }
-    return c.options(syntax);
+  /** Add colors for the options syntax prop. E.g. --output="string" */
+  const formatSyntax = (name: string, type: string) => {
+    if (!includeOptionsType) return { syntax: c.option(name), len: name.length };
+    return { syntax: c.option(name) + chalk.white('=') + c.type(type), len: name.length + 1 + type.length };
   };
 
-  /** New line */
-  const nl = (count: number) => '\n'.repeat(count);
-  const indent = (count: number) => ' '.repeat(count);
-
+  // Get longest indents
   const longestCommandName = Math.max(...schema.commands.map(command => command.name?.length ?? 0));
-  const longestGlobalSyntax = Math.max(...schema.globalOptions.map(option => option?.syntax?.length ?? 0));
+  const longestGlobalSyntax = Math.max(...schema.global.options.map(option => formatSyntax(option.name, option.type).len), 0);
   const longestSyntax = Math.max(
     ...schema.commands.map(command =>
-      command.options ? Math.max(...command.options.map(option => option.syntax?.length ?? 0), 0) : 0,
+      command.options ? Math.max(...command.options.map(option => formatSyntax(option.name, option.type).len), 0) : 0,
     ),
   );
   const longest = Math.max(longestCommandName, longestGlobalSyntax, longestSyntax);
 
-  if (schema.description) {
-    console.log(c.title(' Description '), nl(1));
-    console.log(indent(2), c.dim('-'), c.description(schema.description), nl(1));
-  }
+  /** Print a styled title */
+  const printTitle = (title: string) => {
+    println(c.title(` ${title} `));
+  };
 
-  const usage = schema.usage ?? schema.name + c.command(' <command>') + c.options(' [options]') + c.args(' [args]');
-  console.log(c.title(' Usage '), nl(1));
-  console.log(indent(2), c.dim('$'), usage, nl(1));
+  /** Print CLI description */
+  const printCliDescription = () => {
+    if (!schema.description) return;
+    printTitle('Description');
+    println(ln(1), indent(2), c.punctuation('-'), c.description(schema.description), ln(1));
+  };
 
-  if (schema.commands.length) {
-    console.log(c.title(' Commands '));
+  /** Print CLI usage */
+  const printCliUsage = () => {
+    const usage = schema.usage ?? schema.name + c.command(' <command>') + c.option(' [options]') + c.argumentsTitle(' [args]');
+    printTitle('Usage');
+    println(ln(1), indent(2), c.punctuation('$'), usage, ln(1));
+  };
+
+  /** Print an option */
+  const printOption = (option: {
+    name: string;
+    type: string;
+    isOptional: boolean;
+    description?: string;
+    example?: string;
+    aliases?: string[];
+  }) => {
+    const { name, type, isOptional, description, example, aliases } = option;
+    const { syntax, len: syntaxLen } = formatSyntax(name, type);
+
+    let isOptionalRequiredPrinted = false;
+    let isOptionalRequiredPrintedLast = true;
+    const printOptionalRequired = () => {
+      if (isOptionalRequiredPrinted) {
+        print(ln(1), indent(longest + 9));
+        isOptionalRequiredPrintedLast = false;
+        return;
+      }
+
+      isOptionalRequiredPrinted = true;
+
+      if (isOptional && showOptionalKeyword) {
+        print(ln(1), indent(2), c.optional('optional'), indent(longest - 3));
+        return;
+      }
+
+      if (!isOptional && showRequiredKeyword) {
+        print(ln(1), indent(2), c.required('required'), indent(longest - 3));
+        return;
+      }
+
+      print(ln(1), indent(longest + 9));
+    };
+
+    // Option syntax
+    print(ln(1), indent(3));
+    print(syntax);
+
+    // space after syntax
+    print(indent(longest + 6 - syntaxLen));
+
+    // Option description
+    if (description && includeOptionDescription) {
+      print(c.description(addIndentLn(description, indent(longest + 10))));
+      printOptionalRequired();
+    }
+
+    // print example
+    if (example && includeOptionExample) {
+      print(c.exampleTitle('example:'));
+      print(indent(2), c.example(addIndentLn(example, indent(longest + 21))));
+      printOptionalRequired();
+    }
+
+    // print aliases
+    if (aliases && aliases.length && includeOptionAliases) {
+      print(c.aliasesTitle('aliases:'));
+      print(indent(2), c.aliases(aliases.join(c.punctuation(', '))));
+      printOptionalRequired();
+    }
+
+    if (!isOptionalRequiredPrinted) printOptionalRequired();
+    if (isOptionalRequiredPrintedLast) println();
+  };
+
+  const printCommand = (command: {
+    name?: string;
+    description?: string;
+    example?: string;
+    aliases?: string[];
+    argsDescription?: string;
+  }) => {
+    const { name, description, example, aliases, argsDescription } = command;
+    if (!name) return;
+
+    let hasInformation = false; // to check if we print something after the command
+
+    // Command
+    print(ln(1), c.punctuation('#'), c.command(name));
+
+    // space after the command
+    print(indent(longest + 7 - name.length));
+
+    // Command Description
+    if (description && includeCommandDescription) {
+      print(addIndentLn(description, indent(longest + 10)));
+      print(ln(1), indent(longest + 9));
+      hasInformation = true;
+    }
+
+    // Command Example
+    if (example && includeCommandExample) {
+      print(c.exampleTitle('example:'));
+      print(indent(2), c.example(addIndentLn(example, indent(longest + 21))));
+      print(ln(1), indent(longest + 9));
+      hasInformation = true;
+    }
+
+    // Command Aliases
+    if (aliases && aliases.length && includeCommandAliases) {
+      print(c.aliasesTitle('aliases:'));
+      print(indent(2), c.aliases(aliases.join(c.punctuation(', '))));
+      print(ln(1), indent(longest + 9));
+      hasInformation = true;
+    }
+
+    // Command Arguments Description
+    if (argsDescription && includeCommandArguments) {
+      print(c.argumentsTitle('arguments:'));
+      print(indent(0), c.arguments(addIndentLn(argsDescription, indent(longest + 21))));
+      println();
+      hasInformation = true;
+    }
+
+    if (!hasInformation) println();
+  };
+
+  // * CLI Description
+  if (includeDescription) printCliDescription();
+
+  // * CLI Usage
+  if (includeUsage) printCliUsage();
+
+  // * Commands
+  if ((schema.commands.length && !Array.isArray(includeCommands)) || (Array.isArray(includeCommands) && includeCommands.length)) {
+    printTitle('Commands');
 
     for (let i = 0; i < schema.commands.length; i++) {
-      const { name, description, aliases, options } = schema.commands[i];
-      if (!name) continue;
+      const { name, description, example, aliases, argsDescription, options } = schema.commands[i];
 
-      console.log(
-        nl(1),
-        c.dim('#'),
-        c.command(name),
-        description ? indent(longest + 6 - name.length) + c.dim('- ') + description : '',
-      );
+      // Print only the specified command
+      if (Array.isArray(includeCommands) && !includeCommands.includes(name)) continue;
 
-      if (aliases) {
-        console.log(indent(longest + 9), c.aliasesTitle('Aliases  '), c.alias(aliases.join(c.dim(', '))));
-      }
+      // Command
+      printCommand({ name, description, example, aliases, argsDescription });
 
+      // Command Options
       if (!options) continue;
-
-      for (let o = 0; o < options.length; o++) {
-        const { syntax, isOptional, description, aliases } = options[o];
-        console.log(
-          nl(1),
-          indent(2),
-          formatSyntax(syntax),
-          indent(longest + 4 - syntax.length),
-          c.optional(isOptional ? '[optional]' : '[required]'),
-          description ? c.dim('- ') + description : '',
-        );
-
-        if (aliases) {
-          console.log(indent(longest + 9), c.aliasesTitle('Aliases   '), c.alias(aliases.join(c.dim(', '))));
-        }
-      }
+      for (let o = 0; o < options.length; o++) printOption(options[o]);
     }
   }
 
-  console.log('');
+  println();
 
-  if (schema.globalOptions) {
-    const globalOptions = schema.globalOptions.filter(Boolean) as NonNullable<(typeof schema.globalOptions)[number]>[];
+  if (!includeGlobalOptions) return;
 
-    if (globalOptions.length === 0) return;
+  const cliGlobalOptions = schema.global.options;
 
-    console.log(c.title(' Global Options '));
+  if (cliGlobalOptions.length === 0) return;
 
-    for (let i = 0; i < globalOptions.length; i++) {
-      const { syntax, isOptional, description, aliases } = globalOptions[i];
+  // * Global
+  printTitle('Global');
 
-      console.log(
-        nl(1),
-        indent(2),
-        formatSyntax(syntax),
-        indent(longest + 4 - syntax.length),
-        c.optional(isOptional ? '[optional]' : '[required]'),
-        description ? c.dim('- ') + description : '',
-      );
-
-      if (aliases) {
-        console.log(indent(longest + 9), c.aliasesTitle('Aliases   '), c.alias(aliases.join(c.dim(', '))));
-      }
-    }
+  // Global Arguments Description
+  if (schema.global.argsDescription && includeGlobalArguments) {
+    print(ln(1), indent(3));
+    print(c.argumentsTitle.bold('Arguments:'));
+    print(indent(longest - 5), c.arguments(addIndentLn(schema.global.argsDescription, indent(longest + 10))));
+    println();
   }
 
-  console.log('');
+  // Global Options
+  for (let i = 0; i < cliGlobalOptions.length; i++) printOption(cliGlobalOptions[i]);
+
+  println();
 }

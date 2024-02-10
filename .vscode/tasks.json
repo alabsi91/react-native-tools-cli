@@ -13,7 +13,11 @@
     {
       "label": "build & resolve-paths",
       "type": "shell",
+<<<<<<< HEAD
 	  "dependsOn": ["build"],
+=======
+      "dependsOn": ["build"],
+>>>>>>> 21da2867ef9e23878a0b05f244b6b5f2f0ae3b51
       "command": "npx resolve-tspaths",
       "group": {
         "kind": "build",

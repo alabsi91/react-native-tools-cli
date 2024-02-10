@@ -10,7 +10,11 @@
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**", "node_modules/**/*.js"],
       "program": "${workspaceFolder}/dist/index.js",
+<<<<<<< HEAD
       "preLaunchTask": "build & resolve-paths",
+=======
+      "preLaunchTask": "build & resolve-paths"
+>>>>>>> 21da2867ef9e23878a0b05f244b6b5f2f0ae3b51
     }
   ]
 }
