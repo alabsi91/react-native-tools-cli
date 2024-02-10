@@ -21,6 +21,7 @@
     "serve:bundle": "node bundle/index.cjs",
     "prettier ": "prettier --ignore-unknown --write src --config-precedence prefer-file",
     "eslint": "eslint src --fix",
+    "update-template": "git pull https://github.com/alabsi91/nodejs-cli-typescript-nsis-template.git main --no-commit --allow-unrelated-histories",
     "prepare": "npm run build:js"
   },
   "dependencies": {
