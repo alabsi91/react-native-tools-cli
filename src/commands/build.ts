@@ -97,7 +97,7 @@ export async function buildCommand(operationName?: (typeof CHOICES)[number]['nam
 
   // test if android directory exists
   if (!existsSync(path.join(projectPath, 'android'))) {
-    Log.error('\nCannot find', chalk.yellow('`android`'), 'directory in', chalk.yellow(projectPath), '\n');
+    Log.error('\nCannot find', chalk.yellow('`android`'), 'directory in your project path.\n');
     process.exit(1);
   }
 
