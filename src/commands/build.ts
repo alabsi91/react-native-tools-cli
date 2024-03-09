@@ -3,6 +3,7 @@ import { cmdPassThrough } from '@/cli-tools/terminal.js';
 import Schema from '@schema';
 import { askToEnterProjectRootPath, isReactNativeRootDir } from '@utils/utils.js';
 import chalk from 'chalk';
+import { existsSync } from 'fs';
 import inquirer from 'inquirer';
 import path from 'path';
 import { z } from 'zod';
@@ -95,7 +96,7 @@ export async function buildCommand(operationName?: (typeof CHOICES)[number]['nam
   const operation = operationName ? CHOICES.filter(e => e.name === operationName)[0] : await askForCommand();
 
   // test if android directory exists
-  if (!path.join(projectPath, 'android')) {
+  if (!existsSync(path.join(projectPath, 'android'))) {
     Log.error('\nCannot find', chalk.yellow('`android`'), 'directory in', chalk.yellow(projectPath), '\n');
     process.exit(1);
   }
