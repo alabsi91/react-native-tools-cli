@@ -94,6 +94,12 @@ export async function buildCommand(operationName?: (typeof CHOICES)[number]['nam
 
   const operation = operationName ? CHOICES.filter(e => e.name === operationName)[0] : await askForCommand();
 
+  // test if android directory exists
+  if (!path.join(projectPath, 'android')) {
+    Log.error('\nCannot find', chalk.yellow('`android`'), 'directory in', chalk.yellow(projectPath), '\n');
+    process.exit(1);
+  }
+
   // eslint and typescript check
   if (operation.isRelease && !skipChecks) {
     await testTsAndEslint(projectPath);
