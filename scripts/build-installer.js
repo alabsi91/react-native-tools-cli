@@ -33,6 +33,8 @@ const {
   cleanAfterBuild,
 } = config;
 
+const currentNodeVersion = useCurrentNodeExe ? process.versions.node : nodeVersion;
+
 (async function () {
   let progress;
   let includeAssetsNsisString = '';
@@ -174,7 +176,7 @@ const {
       .replace('!define AppVersion ""', `!define AppVersion "v${version}"`) // inject AppVersion
       .replace('!define AppDescription ""', `!define AppDescription "${description}"`) // inject AppDescription
       .replace('!define JsFile ""', `!define JsFile "${outJsFile}"`) // inject JsFile name
-      .replace('Section "Node.js"', `Section "node.js v${nodeVersion}"`) // inject Node.js version
+      .replace('Section "Node.js"', `Section "node.js v${currentNodeVersion}"`) // inject Node.js version
       .replace(/\s*;\s*{assetsFiles}.*/, includeAssetsNsisString); // inject included assets
     // remove Node.js component if not included in the installer.
     if (!includeNodejs) {

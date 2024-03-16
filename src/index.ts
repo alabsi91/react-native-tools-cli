@@ -14,7 +14,7 @@ const coolGradient = gradient([
   { color: '#2BFF88', pos: 1 },
 ]);
 
-// ? `https://www.kammerl.de/ascii/AsciiSignature.php` 👈 to convert your app's title to ASCII art.
+// ? `https://www.kammerl.de/ascii/AsciiSignature.php`     👈 to convert your app's title to ASCII art.
 // ? `https://codebeautify.org/javascript-escape-unescape` 👈 escape your title's string for JavaScript.
 console.log(
   coolGradient(String.raw` 
