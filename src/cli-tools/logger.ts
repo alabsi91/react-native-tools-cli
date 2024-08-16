@@ -71,16 +71,17 @@ function logFormatter(title: string, style: ChalkInstance, ...messages: string[]
   const { prefixNewlines, content, suffixNewlines } = splitOnNewline(messages);
   const formattedTitle = formatLogTitle(title, style);
 
-  const split = content.split('\n');
+  const splitByNewLines = content.split('\n');
+
   let message = '';
-  for (let i = 0; i < split.length; i++) {
+  for (let i = 0; i < splitByNewLines.length; i++) {
     if (i > 0) {
       const width = logConfig.titleWidth / logConfig.spacer.length;
       const spacer = logConfig.spacer.repeat(width).padEnd(logConfig.titleWidth);
-      message += '\n' + logConfig.style.spacer(spacer) + ' ' + style(split[i]);
+      message += '\n' + logConfig.style.spacer(spacer) + ' ';
     }
 
-    message += style(split[i]);
+    message += style(splitByNewLines[i]);
   }
 
   console.log(prefixNewlines + formattedTitle, message, suffixNewlines);
