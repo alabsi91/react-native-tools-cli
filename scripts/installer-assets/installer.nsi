@@ -141,6 +141,6 @@ Section "Uninstall"
   RMDir /R "$INSTDIR"
 
   ; Remove from path variable
-  ${PowerShellExec} "if($$Env:PATH.Contains(';$INSTDIR')){[Environment]::SetEnvironmentVariable('PATH', $$Env:PATH.Replace(';$INSTDIR',''), [EnvironmentVariableTarget]::Machine)}"
+  ${PowerShellExec} "$$tempPathVar = [System.Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::User);[Environment]::SetEnvironmentVariable('PATH', $$tempPathVar.Replace(';$INSTDIR',''), [EnvironmentVariableTarget]::User)"
 
 SectionEnd
