@@ -92,7 +92,7 @@ Section "${AppName} ${AppVersion}" SecCli
   WriteUninstaller "$INSTDIR\uninstall.exe"
 
   ; Add to path variable
-  ${PowerShellExec} "if($$Env:PATH.Contains('$INSTDIR')){Write-Output 'path already exists';}else{[Environment]::SetEnvironmentVariable('PATH', $$Env:PATH + ';$INSTDIR', [EnvironmentVariableTarget]::Machine)}"
+  ${PowerShellExec} "if($$Env:PATH.Contains('$INSTDIR')){Write-Output 'path already exists';}else{$$tempPathVar = [System.Environment]::GetEnvironmentVariable('PATH', [EnvironmentVariableTarget]::User); [Environment]::SetEnvironmentVariable('PATH', $$tempPathVar + ';$INSTDIR', [EnvironmentVariableTarget]::User)}"
 SectionEnd
 
 Section "Node.js" SecNode
