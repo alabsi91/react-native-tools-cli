@@ -1,15 +1,15 @@
 export default {
   // Output folder for the installer
-  outFolder: 'installer',
+  outFolder: "installer",
 
   // Output JavaScript file for the installer
-  outJsFile: 'index.cjs',
+  outJsFile: "index.cjs",
 
   // Entry file for the installer
-  entryFile: 'src/index.ts',
+  entryFile: "src/index.ts",
 
   // NSIS (Nullsoft Scriptable Install System) CLI path
-  nsisCliPath: 'C:/Program Files (x86)/NSIS/makensis.exe',
+  nsisCliPath: "C:/Program Files (x86)/NSIS/makensis.exe",
 
   // Files or folders to be included in the installer
   includeAssets: [],
@@ -19,7 +19,7 @@ export default {
   includeNodejs: false,
 
   // Node.js version to download
-  nodeVersion: 'latest-v20.x',
+  nodeVersion: "latest-v20.x",
 
   // Function to generate Node.js download link based on the version
   nodeDownloadLink: version => `https://nodejs.org/dist/${version}/win-x64/node.exe`,

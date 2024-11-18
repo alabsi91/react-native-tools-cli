@@ -12,37 +12,41 @@
   ],
   "scripts": {
     "start:dev": "node scripts/start-dev.js",
-    "test": "tsc --noEmit && eslint src --max-warnings 0",
+    "test": "eslint --fix && tsc --noEmit",
     "build:js": "tsc && resolve-tspaths",
     "build:bundle": "esbuild src/index.ts --bundle --platform=node --target=node16 --format=cjs --banner:js=\"var import_meta_url = require('url').pathToFileURL(__filename);\" --define:import.meta.url=import_meta_url --outfile=bundle/index.cjs --minify --tree-shaking=true",
     "build:nsis": "node --no-warnings scripts/build-installer.js",
     "build:executable": "node --no-warnings scripts/build-executable.js",
     "serve:build": "node dist/index.js",
     "serve:bundle": "node bundle/index.cjs",
-    "prettier ": "prettier --ignore-unknown --write src --config-precedence prefer-file",
-    "eslint": "eslint src --fix",
     "update-template": "git pull https://github.com/alabsi91/nodejs-cli-typescript-nsis-template.git main --no-commit --allow-unrelated-histories",
-    "prepare": "npm run build:js"
+    "prepare": "npm run test && npm run build:js"
   },
   "dependencies": {
+    "@inquirer/input": "^4.0.2",
+    "@inquirer/prompts": "^7.1.0",
     "chalk": "^5.3.0",
-    "gradient-string": "^2.0.2",
-    "inquirer": "^9.2.14",
-    "zod": "^3.22.4"
+    "gradient-string": "^3.0.0",
+    "node-fetch": "^3.3.2",
+    "zod": "^3.23.8",
+    "zod-args-parser": "^1.0.5"
   },
   "devDependencies": {
-    "@types/gradient-string": "^1.1.5",
+    "@eslint/compat": "^1.2.3",
+    "@eslint/js": "^9.15.0",
+    "@types/eslint__js": "^8.42.3",
+    "@types/gradient-string": "^1.1.6",
     "@types/inquirer": "^9.0.7",
-    "@types/node": "^20.11.17",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "esbuild": "^0.20.0",
-    "eslint": "^8.56.0",
+    "@types/node": "^22.9.0",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "prettier": "^3.2.5",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.12.0",
+    "prettier": "^3.3.3",
     "prettier-plugin-jsdoc": "^1.3.0",
-    "resolve-tspaths": "^0.8.17",
-    "typescript": "^5.3.3"
+    "resolve-tspaths": "^0.8.22",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "8.14.1-alpha.8"
   }
 }

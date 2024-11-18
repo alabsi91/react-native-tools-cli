@@ -1,18 +1,18 @@
-import { Log } from '@cli/logger.js';
-import { sleep } from '@cli/terminal.js';
-import chalk from 'chalk';
+import { Log } from "@cli/logger.js";
+import { sleep } from "@cli/terminal.js";
+import chalk from "chalk";
 
 // ? 💁 See `https://github.com/sindresorhus/cli-spinners/blob/main/spinners.json` for more spinners.
-const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 /**
  * ⚠️ if the terminal's window is resized while the spinner is running, weird behavior may occur.
  *
  * @example
- *   const loading = progress('Loading...'); // start the spinner
- *   loading.start('Downloading...'); // update the message without stopping the spinner
- *   loading.error('Error...'); // stop the spinner and print an styled message
- *   loading.success('Success!'); // stop the spinner and print an styled message
- *   loading.log('Log...'); // stop the spinner and print a message without styling
+ *   const loading = progress("Loading..."); // start the spinner
+ *   loading.start("Downloading..."); // update the message without stopping the spinner
+ *   loading.error("Error..."); // stop the spinner and print an styled message
+ *   loading.success("Success!"); // stop the spinner and print an styled message
+ *   loading.log("Log..."); // stop the spinner and print a message without styling
  *   loading.stop(); // stop the spinner
  */
 export function spinner(message: string, autoStopTimer = 0) {
@@ -21,14 +21,14 @@ export function spinner(message: string, autoStopTimer = 0) {
 
   async function start(startMessage = message, timer = autoStopTimer) {
     if (id) clearInterval(id);
-    process.stdin.setEncoding('utf8'); // set encoding to utf8
+    process.stdin.setEncoding("utf8"); // set encoding to utf8
     process.stdin.setRawMode(true); // disable buffering
 
-    process.stdin.once('readable', () => {
+    process.stdin.once("readable", () => {
       const buf = process.stdin.read(), // read the buffer
         str = JSON.stringify(buf), // "\u001b[9;1R
-        xy = /\[(.*)/g.exec(str)?.[0].replace(/\[|R"/g, '').split(';'), // get x and y coordinates
-        pos = { rows: +(xy?.[0] || '0'), cols: +(xy?.[1] || '0') }; // get cursor position
+        xy = /\[(.*)/g.exec(str)?.[0].replace(/\[|R"/g, "").split(";"), // get x and y coordinates
+        pos = { rows: +(xy?.[0] || "0"), cols: +(xy?.[1] || "0") }; // get cursor position
 
       process.stdin.setRawMode(false); // disable raw mode
 
@@ -46,7 +46,7 @@ export function spinner(message: string, autoStopTimer = 0) {
     });
 
     process.stdin.resume();
-    process.stdout.write('\u001b[6n'); // will report the cursor position to the application
+    process.stdout.write("\u001b[6n"); // will report the cursor position to the application
 
     // 🕐 wait for a certain amount of time before stopping the spinner.
     if (timer) {
@@ -74,12 +74,12 @@ export function spinner(message: string, autoStopTimer = 0) {
     /** ✅ stop with a success styled message. */
     success(endMessage: string) {
       stop();
-      Log.success(endMessage, '\n'); // 🖨️ print end message to the console.
+      Log.success(endMessage, "\n"); // 🖨️ print end message to the console.
     },
     /** ⛔ stop with an error styled message. */
     error(endMessage: string) {
       stop();
-      Log.error(endMessage, '\n'); // 🖨️ print end message to the console.
+      Log.error(endMessage, "\n"); // 🖨️ print end message to the console.
     },
     /** Stop with a none styled message. */
     log(logMessage: string) {
