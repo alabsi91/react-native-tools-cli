@@ -1,13 +1,12 @@
 {
-  "plugins": ["./node_modules/prettier-plugin-jsdoc/dist/index.js"],
+  "plugins": ["prettier-plugin-jsdoc"],
   "arrowParens": "avoid",
-  "printWidth": 130,
-  "jsxSingleQuote": true,
+  "printWidth": 120,
   "semi": true,
   "bracketSpacing": true,
   "bracketSameLine": false,
   "endOfLine": "auto",
-  "singleQuote": true,
+  "singleQuote": false,
   "overrides": [
     {
       "files": "*.map",

@@ -1,20 +1,20 @@
-import * as esbuild from 'esbuild';
-import chalk from 'chalk';
-import { spawn } from 'child_process';
+import * as esbuild from "esbuild";
+import chalk from "chalk";
+import { spawn } from "child_process";
 
-const outfile = './.dev-server/index.js';
-const entryPoint = './src/index.ts';
+const outfile = "./.dev-server/index.js";
+const entryPoint = "./src/index.ts";
 
 let worker;
 
 const plugins = [
   {
-    name: 'my-plugin',
+    name: "my-plugin",
     setup(build) {
       build.onEnd(result => {
         if (result.errors.length) {
-          console.error(chalk.red('⛔ Build failed !!'));
-          console.log(chalk.yellow('\n🕐 Waiting for new changes ...\n'));
+          console.error(chalk.red("⛔ Build failed !!"));
+          console.log(chalk.yellow("\n🕐 Waiting for new changes ...\n"));
           return;
         }
 
@@ -30,14 +30,14 @@ const plugins = [
   try {
     const context = await esbuild.context({
       entryPoints: [entryPoint],
-      external: ['./node_modules/*'],
-      platform: 'node',
+      external: ["./node_modules/*"],
+      platform: "node",
       outfile,
-      format: 'esm',
+      format: "esm",
       sourcemap: true,
       bundle: true,
       define: {
-        'process.env.NODE_ENV': '"development"',
+        "process.env.NODE_ENV": '"development"',
       },
       plugins,
     });
@@ -56,20 +56,25 @@ function run() {
     try {
       process.kill(worker.pid);
     } catch (error) {
-      console.error(chalk.red('⛔ Failed to kill worker !!'));
+      console.error(chalk.red("⛔ Failed to kill worker !!"), error);
     }
   }
 
   //🧹 clean up console logs
-  console.clear();
+  clearConsole();
 
   //🔥 start new worker
   console.log(chalk.yellow('\n👀 Watching for changes in "./src/**/*" ...\n'));
-  worker = spawn('node', ['--enable-source-maps', outfile], { stdio: 'inherit' });
+  worker = spawn("node", ["--enable-source-maps", outfile], { stdio: "inherit" });
 
   //👂 listen for worker exit signal.
-  worker.on('exit', code => {
+  worker.on("exit", code => {
     if (code !== 0) return;
-    console.log(chalk.yellow('\n\n🕐 Waiting for new changes ...'));
+    console.log(chalk.yellow("\n\n🕐 Waiting for new changes ..."));
   });
+}
+
+function clearConsole() {
+  process.stdout.write("\u001b[3J\u001b[2J\u001b[1J");
+  console.clear();
 }
